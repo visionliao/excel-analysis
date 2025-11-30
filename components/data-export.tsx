@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FileText } from "lucide-react"
-import type { FileItem } from "@/components/file-upload-area"
+import type { FileItem } from "@/components/excel-data-analysis"
 
 interface TableAnalysisPanelProps {
   files: FileItem[]

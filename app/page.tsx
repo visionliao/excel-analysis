@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
-import { FileUploadArea, type FileItem } from "@/components/file-upload-area"
-import { TableAnalysisPanel } from "@/components/table-analysis-panel"
+import { FileUploadArea, type FileItem } from "@/components/excel-data-analysis"
+import { TableAnalysisPanel } from "@/components/data-export"
 import { GuidePanel } from "@/components/guide-panel"
 
 export default function Home() {
