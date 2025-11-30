@@ -136,7 +136,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
   )
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full max-w-none xl:max-w-7xl 2xl:max-w-[90rem] mx-auto">
       <input
         ref={fileInputRef}
         type="file"

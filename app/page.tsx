@@ -13,10 +13,12 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar activeItem={activeMenu} onMenuChange={setActiveMenu} />
-      <main className="flex-1 overflow-auto p-8">
-        {activeMenu === "table-process" && <FileUploadArea files={files} onFilesChange={setFiles} />}
-        {activeMenu === "table-analysis" && <TableAnalysisPanel files={files} />}
-        {activeMenu === "guide" && <GuidePanel />}
+      <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <div className="w-full max-w-full">
+          {activeMenu === "table-process" && <FileUploadArea files={files} onFilesChange={setFiles} />}
+          {activeMenu === "table-analysis" && <TableAnalysisPanel files={files} />}
+          {activeMenu === "guide" && <GuidePanel />}
+        </div>
       </main>
     </div>
   )
