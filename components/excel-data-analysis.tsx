@@ -3,14 +3,16 @@
 import type React from "react"
 
 import { useState, useCallback, useRef } from "react"
-import { FolderOpen, FileText, Upload, X } from "lucide-react"
+import { FolderOpen, FileText, Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 export interface FileItem {
   id: string
   name: string
   file?: File
+  relativePath?: string // Store relative path for preserving directory structure
 }
 
 const ALLOWED_EXTENSIONS = [".xlsx", ".xls", ".csv"]
@@ -20,8 +22,8 @@ function isAllowedFile(fileName: string): boolean {
   return ALLOWED_EXTENSIONS.some((ext) => lowerName.endsWith(ext))
 }
 
-async function readDirectoryEntries(entry: FileSystemDirectoryEntry): Promise<File[]> {
-  const files: File[] = []
+async function readDirectoryEntries(entry: FileSystemDirectoryEntry, basePath = ""): Promise<{ file: File; relativePath: string }[]> {
+  const files: { file: File; relativePath: string }[] = []
   const reader = entry.createReader()
 
   const readEntries = (): Promise<FileSystemEntry[]> => {
@@ -38,10 +40,12 @@ async function readDirectoryEntries(entry: FileSystemDirectoryEntry): Promise<Fi
           ;(e as FileSystemFileEntry).file(resolve, reject)
         })
         if (isAllowedFile(file.name)) {
-          files.push(file)
+          const relativePath = basePath ? `${basePath}/${file.name}` : file.name
+          files.push({ file, relativePath })
         }
       } else if (e.isDirectory) {
-        const subFiles = await readDirectoryEntries(e as FileSystemDirectoryEntry)
+        const newBasePath = basePath ? `${basePath}/${e.name}` : e.name
+        const subFiles = await readDirectoryEntries(e as FileSystemDirectoryEntry, newBasePath)
         files.push(...subFiles)
       }
     }
@@ -57,8 +61,10 @@ interface FileUploadAreaProps {
 
 export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isCopying, setIsCopying] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -76,7 +82,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
       setIsDragging(false)
 
       const items = Array.from(e.dataTransfer.items)
-      const allFiles: File[] = []
+      const allFileData: { file: File; relativePath: string }[] = []
 
       for (const item of items) {
         const entry = item.webkitGetAsEntry?.()
@@ -86,19 +92,20 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
               ;(entry as FileSystemFileEntry).file(resolve, reject)
             })
             if (isAllowedFile(file.name)) {
-              allFiles.push(file)
+              allFileData.push({ file, relativePath: file.name })
             }
           } else if (entry.isDirectory) {
-            const dirFiles = await readDirectoryEntries(entry as FileSystemDirectoryEntry)
-            allFiles.push(...dirFiles)
+            const dirFiles = await readDirectoryEntries(entry as FileSystemDirectoryEntry, entry.name)
+            allFileData.push(...dirFiles)
           }
         }
       }
 
-      const newFiles = allFiles.map((file, index) => ({
+      const newFiles = allFileData.map(({ file, relativePath }, index) => ({
         id: `file-${Date.now()}-${index}`,
         name: file.name,
         file,
+        relativePath,
       }))
       onFilesChange([...files, ...newFiles])
     },
@@ -117,6 +124,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
         id: `file-${Date.now()}-${index}`,
         name: file.name,
         file,
+        relativePath: file.name, // For individual files, the relative path is just the filename
       }))
       onFilesChange([...files, ...newFiles])
       e.target.value = ""
@@ -134,6 +142,80 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
     },
     [files, onFilesChange],
   )
+
+  const handleDataAnalysis = useCallback(async () => {
+    if (files.length === 0) {
+      toast({
+        title: "没有选择文件",
+        description: "请先选择要分析的文件",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsCopying(true)
+
+    try {
+      // Convert files to base64 for transmission
+      const filesWithBase64 = await Promise.all(
+        files.map(async (fileItem) => {
+          if (!fileItem.file) {
+            throw new Error(`File ${fileItem.name} is not available`)
+          }
+
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(fileItem.file!)
+          })
+
+          // Remove the data URL prefix to get pure base64
+          const base64Data = base64.split(',')[1]
+
+          return {
+            name: fileItem.name,
+            data: base64Data,
+            relativePath: fileItem.relativePath || fileItem.name,
+          }
+        })
+      )
+
+      // Call the API to copy files
+      const response = await fetch('/api/copy-files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: filesWithBase64 }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "文件复制成功",
+          description: `成功复制 ${result.results.successful} 个文件到 ${result.outputDirectory}`,
+        })
+        console.log("开始数据分析", files)
+      } else {
+        toast({
+          title: "文件复制失败",
+          description: result.error || "复制文件时发生错误",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error during data analysis:', error)
+      toast({
+        title: "复制过程中发生错误",
+        description: error instanceof Error ? error.message : "未知错误",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCopying(false)
+    }
+  }, [files, toast])
 
   return (
     <div className="w-full max-w-none xl:max-w-7xl 2xl:max-w-[90rem] mx-auto">
@@ -219,7 +301,23 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
           </div>
 
           <div className="flex justify-end mt-4">
-            <Button onClick={() => console.log("开始数据分析", files)}>数据分析</Button>
+            <Button
+              onClick={handleDataAnalysis}
+              disabled={isCopying || files.length === 0}
+              className="gap-2"
+            >
+              {isCopying ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  复制中...
+                </>
+              ) : (
+                <>
+                  <FileText size={16} />
+                  数据分析
+                </>
+              )}
+            </Button>
           </div>
         </div>
       )}
