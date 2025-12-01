@@ -26,6 +26,7 @@ export const TABLE_MAPPING: Record<string, string> = {
   '租客基础画像  年龄-性别(门店）': 'tenant_profile_demographics',
   'Resident Lease Expirations': 'lease_expiration_schedule',
   '在住客人生日报表': 'resident_birthday_list',
+  '人脸登记返回日志': 'face_registration',
   
   // 前台运营与服务 (Front Desk & Operations)
   '预约带看列表': 'viewing_appointment_list',
