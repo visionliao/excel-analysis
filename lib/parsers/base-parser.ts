@@ -80,11 +80,35 @@ export abstract class BaseFileParser {
     return row.map(cell => cell ? String(cell).trim() : '');
   }
 
-  // 验证行数据是否有效，默认逻辑：至少有2个有效值
+  // 验证行数据是否有效，增加“数据密度”检查，过滤页脚、汇总行、分页符
   protected validateRow(row: any, headers: string[]): boolean {
     if (!row || Object.keys(row).length === 0) return false;
-    const values = Object.values(row).filter(v => v !== null && v !== '' && v !== undefined);
-    return values.length >= 2;
+
+    // 统计这一行在“表头范围内”的有效数据个数
+    let validCellCount = 0;
+    headers.forEach(header => {
+      // 这里的 header 是在 parse 流程中确定的有效表头
+      const val = row[header];
+      // 判定有效值：非 null、非 undefined、非空字符串
+      if (val !== null && val !== undefined && String(val).trim() !== '') {
+        validCellCount++;
+      }
+    });
+
+    // 规则 1: 绝对数量底线
+    // 至少要有 2 个有效值，否则大概率是垃圾数据
+    if (validCellCount < 2) return false;
+
+    // 规则 2: 相对密度底线
+    // 如果一行数据的有效列数，连表头总列数的一半都不到，视为无效行
+    const densityThreshold = 0.5; // 50% 阈值
+    if (validCellCount < (headers.length * densityThreshold)) {
+      // 可以在这里加个 debug log 看看过滤了什么
+      // console.log(`Filtered low-density row: ${JSON.stringify(row)}`);
+      return false;
+    }
+
+    return true;
   }
 
   // 转换行数据 (例如日期格式化)
