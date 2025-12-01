@@ -5,6 +5,7 @@ import { DepositDetailParser } from './implementations/deposit-detail-parser';
 import { PerformanceTrackingParser } from './implementations/performance-tracking-parser';
 import { FaceRegistrationParser } from './implementations/face-registration-parser';
 import { VehicleDataESGParser } from './implementations/vehicle-data-esg-parser';
+import { PostingSummaryTaxSepParser } from './implementations/posting-summary-tax-sep-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -17,6 +18,7 @@ export class ParserFactory {
     'performance_tracking': new PerformanceTrackingParser(),
     'face_registration': new FaceRegistrationParser(),
     'vehicle_data_esg': new VehicleDataESGParser(),
+    'posting_summary_tax_sep': new PostingSummaryTaxSepParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
