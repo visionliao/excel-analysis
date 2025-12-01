@@ -1,85 +1,106 @@
+// app/api/copy-files/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { existsSync } from 'fs'
+import { parseExcelBuffer, ParsedTableData } from '@/lib/file-parser'
+import { getBaseTableName, TABLE_MAPPING } from '@/lib/constants'
+
+interface GroupedTableData extends ParsedTableData {
+  parseErrors: string[]; // 记录该表下的解析错误
+}
+
+function getLocalTimestamp() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  // 返回格式：2025-12-01_10-30-55
+  return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { files } = await request.json()
-
-    if (!files || !Array.isArray(files)) {
-      return NextResponse.json({ error: 'Invalid files data' }, { status: 400 })
-    }
-
-    // Create timestamp for output directory
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const timestamp = getLocalTimestamp();
     const outputDir = join(process.cwd(), 'output', 'source', timestamp)
+    await mkdir(outputDir, { recursive: true })
 
-    // Ensure output directory exists
-    try {
-      await mkdir(outputDir, { recursive: true })
-    } catch (error) {
-      console.error('Error creating output directory:', error)
-      return NextResponse.json({ error: 'Failed to create output directory' }, { status: 500 })
-    }
+    // 聚合容器
+    const groupedTables: Record<string, GroupedTableData> = {};
 
-    const copyPromises = files.map(async (fileItem: { name: string; data: string; relativePath?: string }) => {
+    await Promise.all(files.map(async (fileItem: any) => {
+      let currentTableName = 'unknown'; // 默认为 unknown，防止 catch 中拿不到名字
+
       try {
-        // Create subdirectory if relativePath is provided
+        // 1. 确定表名
+        const baseName = getBaseTableName(fileItem.name);
+        currentTableName = TABLE_MAPPING[baseName] || `unknown_${baseName}`;
+
+        // 初始化聚合对象
+        if (!groupedTables[currentTableName]) {
+          groupedTables[currentTableName] = {
+            tableName: currentTableName,
+            originalBaseName: baseName,
+            headers: [],
+            rows: [],
+            sourceFiles: [],
+            totalRows: 0,
+            parseErrors: [] // 错误记录
+          };
+        }
+
+        // 2. 保存文件
         let targetDir = outputDir
         if (fileItem.relativePath) {
-          // Remove filename from relativePath to get directory path
           const dirPath = fileItem.relativePath.substring(0, fileItem.relativePath.lastIndexOf('/'))
           if (dirPath) {
             targetDir = join(outputDir, dirPath)
-            // Ensure subdirectory exists
             await mkdir(targetDir, { recursive: true })
           }
         }
-
-        // Write file to target location
-        const targetPath = join(targetDir, fileItem.name)
         const buffer = Buffer.from(fileItem.data, 'base64')
-        await writeFile(targetPath, buffer)
+        await writeFile(join(targetDir, fileItem.name), buffer)
 
-        return {
-          success: true,
-          originalName: fileItem.name,
-          targetPath: targetPath
+        // 3. 解析文件
+        const { headers, rows } = await parseExcelBuffer(buffer, fileItem.name);
+
+        // 4. 合并数据
+        const currentTable = groupedTables[currentTableName];
+        currentTable.sourceFiles.push(fileItem.name); // 记录成功文件
+        currentTable.rows.push(...rows);
+        currentTable.totalRows += rows.length;
+
+        // 更新表头 (如果还没有表头，且当前解析出的表头有效)
+        if (currentTable.headers.length === 0 && headers.length > 0) {
+          currentTable.headers = headers;
         }
-      } catch (error) {
-        console.error(`Error copying file ${fileItem.name}:`, error)
-        return {
-          success: false,
-          originalName: fileItem.name,
-          error: error instanceof Error ? error.message : 'Unknown error'
+      } catch (fileError: any) {
+        console.error(`Error processing file ${fileItem.name}:`, fileError);
+        // 5. 错误捕获：记录到对应的表中，而不是让 API 崩溃
+        if (groupedTables[currentTableName]) {
+          groupedTables[currentTableName].parseErrors.push(
+            `文件 "${fileItem.name}" 解析失败: ${fileError.message}`
+          );
+          // 也可以选择把文件名加到 sourceFiles 里，或者单独搞一个 failedFiles 列表
         }
       }
-    })
+    }));
 
-    const results = await Promise.all(copyPromises)
+    // 转换为数组返回
+    const resultList = Object.values(groupedTables);
 
-    // Count successful and failed copies
-    const successCount = results.filter(r => r.success).length
-    const failureCount = results.length - successCount
-
+    // 只要没有系统级崩溃，都返回 200，在前端展示具体的错误信息
     return NextResponse.json({
       success: true,
-      message: `Successfully copied ${successCount} files to ${outputDir}`,
-      outputDirectory: outputDir,
-      results: {
-        total: results.length,
-        successful: successCount,
-        failed: failureCount,
-        details: results
-      }
+      data: resultList
     })
-
   } catch (error) {
-    console.error('Error in file copy API:', error)
-    return NextResponse.json({
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    console.error('System API Error:', error)
+    return NextResponse.json({ error: 'Critical system error during processing' }, { status: 500 })
   }
 }

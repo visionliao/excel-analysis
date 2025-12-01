@@ -7,6 +7,16 @@ import { FolderOpen, FileText, Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { SmartDataDisplay } from "./data-structure-display"
+
+export interface GroupedTableData {
+  tableName: string
+  originalBaseName: string
+  headers: string[]
+  rows: any[]
+  sourceFiles: string[]
+  totalRows: number
+}
 
 export interface FileItem {
   id: string
@@ -62,6 +72,7 @@ interface FileUploadAreaProps {
 export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isCopying, setIsCopying] = useState(false)
+  const [parsedData, setParsedData] = useState<GroupedTableData[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
@@ -194,10 +205,15 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
 
       if (response.ok) {
         toast({
-          title: "文件复制成功",
-          description: `成功复制 ${result.results.successful} 个文件到 ${result.outputDirectory}`,
+          title: "解析成功",
+          description: `成功解析并合并为 ${result.data?.length || 0} 个逻辑表`,
         })
-        console.log("开始数据分析", files)
+        console.log("解析结果", result)
+
+        // Store parsed data for display
+        if (result.data && result.data.length > 0) {
+          setParsedData(result.data)
+        }
       } else {
         toast({
           title: "文件复制失败",
@@ -309,7 +325,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
               {isCopying ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  复制中...
+                  解析中...
                 </>
               ) : (
                 <>
@@ -321,6 +337,9 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
           </div>
         </div>
       )}
+
+      {/* Display parsed data structure */}
+      {parsedData.length > 0 && <SmartDataDisplay groupedData={parsedData} />}
     </div>
   )
 }
