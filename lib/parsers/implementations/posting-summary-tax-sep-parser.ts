@@ -1,5 +1,6 @@
 import { BaseFileParser, ParseResult } from '../base-parser';
 
+// 处理 前台入账账号汇总（区间价税分离）系列表格
 export class PostingSummaryTaxSepParser extends BaseFileParser {
   
   // 用于全局计数（跨文件累计）
