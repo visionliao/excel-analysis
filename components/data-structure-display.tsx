@@ -31,6 +31,7 @@ export function SmartDataDisplay({ groupedData }: SmartDataDisplayProps) {
   const totalStructures = groupedData.length; // 最终生成的表结构数量
   const totalFiles = groupedData.reduce((acc, item) => acc + item.sourceFiles.length, 0); // 总共处理的文件数量
   const totalErrors = groupedData.reduce((acc, item) => acc + (item.parseErrors?.length || 0), 0); // 总错误数
+  const totalValidRows = groupedData.reduce((acc, item) => acc + item.totalRows, 0); // 计算有效数据总行数
 
   return (
     <div className="space-y-6 mt-8">
@@ -43,7 +44,8 @@ export function SmartDataDisplay({ groupedData }: SmartDataDisplayProps) {
         <p className="text-muted-foreground text-sm ml-9">
           总共解析 <span className="font-bold text-foreground">{totalFiles}</span> 个来源表格，
           经过自动合并处理，
-          最终生成 <span className="font-bold text-foreground">{totalStructures}</span> 张表结构数据。
+          最终生成 <span className="font-bold text-foreground">{totalStructures}</span> 张表结构数据，
+          有效数据总共 <span className="font-bold text-foreground">{totalValidRows.toLocaleString()}</span> 行。
           {totalErrors > 0 && (
             <span className="text-destructive ml-2 font-medium">
               (包含 {totalErrors} 个解析异常)
