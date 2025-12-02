@@ -7,6 +7,7 @@ import { FaceRegistrationParser } from './implementations/face-registration-pars
 import { VehicleDataESGParser } from './implementations/vehicle-data-esg-parser';
 import { PostingSummaryTaxSepParser } from './implementations/posting-summary-tax-sep-parser';
 import { DailyDepartureParser } from './implementations/daily-departure-parser';
+import { EnergyConsumptionStatsParser } from './implementations/energy-consumption-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -21,6 +22,7 @@ export class ParserFactory {
     'vehicle_data_esg': new VehicleDataESGParser(),
     'posting_summary_tax_sep': new PostingSummaryTaxSepParser(),
     'daily_departure_report': new DailyDepartureParser(),
+    'energy_consumption_stats': new EnergyConsumptionStatsParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
