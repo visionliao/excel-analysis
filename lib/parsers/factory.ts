@@ -13,6 +13,7 @@ import { AllowanceBalanceParser } from './implementations/allowance-balance-pars
 import { TenantDemographicsParser } from './implementations/tenant-demographics-parser';
 import { ResidentIdDocumentParser } from './implementations/resident-id-document-parser';
 import { StatisticsGeneralParser } from './implementations/statistics-general-parser';
+import { LeaseExpirationParser } from './implementations/lease-expiration-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -33,6 +34,7 @@ export class ParserFactory {
     'tenant_profile_demographics': new TenantDemographicsParser(),
     'resident_id_document_list': new ResidentIdDocumentParser(),
     'statistics_general': new StatisticsGeneralParser(),
+    'lease_expiration_schedule': new LeaseExpirationParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
