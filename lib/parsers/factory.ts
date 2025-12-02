@@ -19,6 +19,7 @@ import { AccountAgingParser } from './implementations/account-aging-parser';
 import { DepartureFollowupParser } from './implementations/departure-followup-parser';
 import { DepositBalanceRealtimeParser } from './implementations/deposit-balance-parser';
 import { APGAssetDataParser } from './implementations/apg-asset-data-parser';
+import { ArAgingResidentParser } from './implementations/ar-aging-resident-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -45,6 +46,7 @@ export class ParserFactory {
     'departure_followup_log': new DepartureFollowupParser(),
     'deposit_balance_realtime': new DepositBalanceRealtimeParser(),
     'apg_asset_data': new APGAssetDataParser(),
+    'ar_aging_resident': new ArAgingResidentParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
