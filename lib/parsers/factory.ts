@@ -9,6 +9,7 @@ import { PostingSummaryTaxSepParser } from './implementations/posting-summary-ta
 import { DailyDepartureParser } from './implementations/daily-departure-parser';
 import { EnergyConsumptionStatsParser } from './implementations/energy-consumption-parser';
 import { ArrivalDepartureParser } from './implementations/arrival-departure-parser';
+import { AllowanceBalanceParser } from './implementations/allowance-balance-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -25,6 +26,7 @@ export class ParserFactory {
     'daily_departure_report': new DailyDepartureParser(),
     'energy_consumption_stats': new EnergyConsumptionStatsParser(),
     'arrival_departure_weekly': new ArrivalDepartureParser(),
+    'allowance_balance_current': new AllowanceBalanceParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
