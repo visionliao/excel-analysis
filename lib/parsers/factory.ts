@@ -15,6 +15,7 @@ import { ResidentIdDocumentParser } from './implementations/resident-id-document
 import { StatisticsGeneralParser } from './implementations/statistics-general-parser';
 import { LeaseExpirationParser } from './implementations/lease-expiration-parser';
 import { ResidentLedgerParser } from './implementations/resident-ledger-parser';
+import { AccountAgingParser } from './implementations/account-aging-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -37,6 +38,7 @@ export class ParserFactory {
     'statistics_general': new StatisticsGeneralParser(),
     'lease_expiration_schedule': new LeaseExpirationParser(),
     'resident_ledger_report': new ResidentLedgerParser(),
+    'account_aging_analysis': new AccountAgingParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
