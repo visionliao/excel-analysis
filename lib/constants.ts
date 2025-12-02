@@ -55,10 +55,13 @@ export function getBaseTableName(fileName: string): string {
   let name = fileName.replace(/\.(xlsx|xls|csv)$/i, '');
   
   // 2. 去掉常见的日期后缀模式，例如 "24-10", "2025-01", "25-2", "(1)"
-  // 这是一个贪婪匹配，尝试找到文件名主体
-  // 匹配末尾的数字、日期分隔符
   name = name.replace(/[\(\s_-]*\d{2,4}[-\.]\d{1,2}[\)\s]*$/, '');
-  name = name.replace(/\s*\(\d+\)$/, ''); // 去掉 (1) 这种副本标记
+
+  // 3. 去掉纯年份/数字后缀 (如 24, 25, 2024, 2025)
+  name = name.replace(/[\s_-]*\d{2,4}$/, '');
+
+  // 4. 去掉 (1) 这种副本标记
+  name = name.replace(/\s*\(\d+\)$/, '');
   
   return name.trim();
 }
