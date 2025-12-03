@@ -7,22 +7,14 @@ import { FolderOpen, FileText, Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { SmartDataDisplay } from "./data-structure-display"
+import { SmartDataDisplay, GroupedTableData } from "./data-structure-display"
 
-export interface GroupedTableData {
-  tableName: string
-  originalBaseName: string
-  headers: string[]
-  rows: any[]
-  sourceFiles: string[]
-  totalRows: number
-}
-
+// 导出 FileItem 接口供父组件使用
 export interface FileItem {
   id: string
   name: string
   file?: File
-  relativePath?: string // Store relative path for preserving directory structure
+  relativePath?: string 
 }
 
 const ALLOWED_EXTENSIONS = [".xlsx", ".xls", ".csv"]
@@ -69,10 +61,17 @@ interface FileUploadAreaProps {
   onFilesChange: (files: FileItem[]) => void
 }
 
+// 组件名改回 FileUploadArea
 export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isCopying, setIsCopying] = useState(false)
+  
+  // 数据状态
   const [parsedData, setParsedData] = useState<GroupedTableData[]>([])
+  const [currentTimestamp, setCurrentTimestamp] = useState<string>('')
+  // 保存过的配置状态
+  const [savedSchema, setSavedSchema] = useState<any>(null)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
@@ -208,15 +207,23 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
           title: "解析成功",
           description: `成功解析并合并为 ${result.data?.length || 0} 个逻辑表`,
         })
-        console.log("解析结果", result)
-
-        // Store parsed data for display
+        
+        // 更新数据状态
         if (result.data && result.data.length > 0) {
           setParsedData(result.data)
         }
+        
+        // 更新时间戳
+        if (result.timestamp) {
+          setCurrentTimestamp(result.timestamp)
+        }
+
+        // 新解析的文件，肯定没有保存过 Schema，重置为空
+        setSavedSchema(null)
+
       } else {
         toast({
-          title: "文件复制失败",
+          title: "解析失败",
           description: result.error || "复制文件时发生错误",
           variant: "destructive",
         })
@@ -224,7 +231,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
     } catch (error) {
       console.error('Error during data analysis:', error)
       toast({
-        title: "复制过程中发生错误",
+        title: "解析过程中发生错误",
         description: error instanceof Error ? error.message : "未知错误",
         variant: "destructive",
       })
@@ -339,7 +346,18 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
       )}
 
       {/* Display parsed data structure */}
-      {parsedData.length > 0 && <SmartDataDisplay groupedData={parsedData} />}
+      {parsedData.length > 0 && (
+        <SmartDataDisplay 
+          groupedData={parsedData} 
+          currentTimestamp={currentTimestamp}
+          savedSchemaConfig={savedSchema}
+          onDataReload={(data, ts, config) => {
+            setParsedData(data)
+            setCurrentTimestamp(ts)
+            setSavedSchema(config)
+          }}
+        />
+      )}
     </div>
   )
 }

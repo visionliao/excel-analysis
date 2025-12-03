@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
     // 只要没有系统级崩溃，都返回 200，在前端展示具体的错误信息
     return NextResponse.json({
       success: true,
+      timestamp: timestamp,
       data: resultList
     })
   } catch (error) {
