@@ -7,7 +7,7 @@ import { FolderOpen, FileText, Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { SmartDataDisplay, GroupedTableData } from "./data-structure-display"
+import { SmartDataDisplay, GroupedTableData, SavedSchemaItem } from "./data-structure-display"
 
 // 导出 FileItem 接口供父组件使用
 export interface FileItem {
@@ -59,18 +59,27 @@ async function readDirectoryEntries(entry: FileSystemDirectoryEntry, basePath = 
 interface FileUploadAreaProps {
   files: FileItem[]
   onFilesChange: (files: FileItem[]) => void
+  parsedData: GroupedTableData[]
+  setParsedData: (data: GroupedTableData[]) => void
+  currentTimestamp: string
+  setCurrentTimestamp: (ts: string) => void
+  savedSchema: SavedSchemaItem[] | null
+  setSavedSchema: (schema: SavedSchemaItem[] | null) => void
 }
 
 // 组件名改回 FileUploadArea
-export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
+export function FileUploadArea({
+  files,
+  onFilesChange,
+  parsedData,
+  setParsedData,
+  currentTimestamp,
+  setCurrentTimestamp,
+  savedSchema,
+  setSavedSchema
+}: FileUploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isCopying, setIsCopying] = useState(false)
-  
-  // 数据状态
-  const [parsedData, setParsedData] = useState<GroupedTableData[]>([])
-  const [currentTimestamp, setCurrentTimestamp] = useState<string>('')
-  // 保存过的配置状态
-  const [savedSchema, setSavedSchema] = useState<any>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
@@ -144,7 +153,11 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
 
   const handleClearFiles = useCallback(() => {
     onFilesChange([])
-  }, [onFilesChange])
+    // 清除文件时也清除解析结果
+    setParsedData([])
+    setCurrentTimestamp('')
+    setSavedSchema(null)
+  }, [onFilesChange, setParsedData, setCurrentTimestamp, setSavedSchema])
 
   const handleRemoveFile = useCallback(
     (id: string) => {
@@ -220,7 +233,6 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
 
         // 新解析的文件，肯定没有保存过 Schema，重置为空
         setSavedSchema(null)
-
       } else {
         toast({
           title: "解析失败",
@@ -238,7 +250,7 @@ export function FileUploadArea({ files, onFilesChange }: FileUploadAreaProps) {
     } finally {
       setIsCopying(false)
     }
-  }, [files, toast])
+  }, [files, toast, setParsedData, setCurrentTimestamp, setSavedSchema])
 
   return (
     <div className="w-full max-w-none xl:max-w-7xl 2xl:max-w-[90rem] mx-auto">
