@@ -42,24 +42,24 @@ export interface GroupedTableData {
 
 export interface SavedSchemaItem {
   tableName: string
-  // 其他配置字段
+  enabled: boolean
+  // ...其他字段
 }
 
 export interface SmartDataDisplayProps {
   groupedData: GroupedTableData[]
   currentTimestamp?: string 
-  savedSchemaConfig?: SavedSchemaItem[] | null // 后端返回的已保存配置
+  savedSchemaConfig?: SavedSchemaItem[] | null
   onDataReload?: (data: GroupedTableData[], timestamp: string, savedConfig: any) => void
 }
 
-// 定义 TableCard 的 Props 接口
 interface TableCardProps {
   table: GroupedTableData
   isDisabled: boolean
   onToggle: (status: 'enabled' | 'disabled') => void
 }
 
-// --- 2. 主组件 ---
+// --- 主组件 ---
 export function SmartDataDisplay({ 
   groupedData, 
   currentTimestamp: initialTimestamp, 
@@ -82,26 +82,28 @@ export function SmartDataDisplay({
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [saveDialogContent, setSaveDialogContent] = useState<{title: string, desc: React.ReactNode}>({ title: '', desc: '' })
 
-  // 初始化/重置禁用状态
+  // 1. 初始化/恢复状态
+  // 根据 savedSchemaConfig 中的 enabled 字段来恢复禁用状态
   useEffect(() => {
     setLastSavedSchema(savedSchemaConfig || null);
 
     if (savedSchemaConfig && savedSchemaConfig.length > 0) {
-      const savedTableNames = new Set(savedSchemaConfig.map(t => t.tableName));
       const newDisabledSet = new Set<string>();
       
-      groupedData.forEach(t => {
-        if (!savedTableNames.has(t.tableName)) {
+      savedSchemaConfig.forEach(t => {
+        // 如果配置文件里明确写了 enabled: false，则加入禁用列表
+        if (t.enabled === false) {
           newDisabledSet.add(t.tableName);
         }
       });
       setDisabledTables(newDisabledSet);
     } else {
+      // 如果没有配置(新数据)，或者配置为空，默认全启用
       setDisabledTables(new Set());
     }
   }, [groupedData, savedSchemaConfig]);
 
-  // 加载历史版本列表
+  // 2. 加载历史版本列表
   useEffect(() => {
     fetch('/api/history/list')
       .then(res => res.json())
@@ -116,7 +118,7 @@ export function SmartDataDisplay({
       .catch(err => console.error("Failed to fetch history", err))
   }, [initialTimestamp, selectedTimestamp])
 
-  // 切换表格启用状态
+  // 3. 切换表格启用状态
   const toggleTableStatus = (tableName: string, status: 'enabled' | 'disabled') => {
     const newSet = new Set(disabledTables)
     if (status === 'disabled') newSet.add(tableName);
@@ -124,7 +126,7 @@ export function SmartDataDisplay({
     setDisabledTables(newSet)
   }
 
-  // 切换历史数据版本
+  // 4. 切换历史数据版本
   const handleHistoryChange = async (timestamp: string) => {
     if (!timestamp) return
     setIsLoadingHistory(true)
@@ -152,28 +154,35 @@ export function SmartDataDisplay({
     }
   }
 
-  // 点击保存前的预检查
+  // 5. 点击保存前的预检查 (Diff 逻辑修复)
   const handlePreSave = () => {
     if (!selectedTimestamp) return;
 
-    const currentEnabledTables = groupedData
-      .filter(t => !disabledTables.has(t.tableName))
-      .map(t => t.tableName)
-      .sort();
-
-    const savedTables = lastSavedSchema 
-      ? lastSavedSchema.map(t => t.tableName).sort()
-      : null;
-
-    if (!savedTables) {
+    // A. 如果从未保存过
+    if (!lastSavedSchema) {
       executeSave();
       return;
     }
 
-    const currentJson = JSON.stringify(currentEnabledTables);
-    const savedJson = JSON.stringify(savedTables);
+    // B. 构建两个禁用集合进行对比
+    // 当前用户的禁用集合
+    const currentDisabledSet = disabledTables;
 
-    if (currentJson === savedJson) {
+    // 上次保存的禁用集合 (从 lastSavedSchema 反推)
+    const savedDisabledSet = new Set<string>();
+    lastSavedSchema.forEach(t => {
+      if (t.enabled === false) savedDisabledSet.add(t.tableName);
+    });
+
+    // C. 计算差异
+    // "新增启用" = 以前禁用了，现在没禁用 (在 savedDisabled 里，不在 currentDisabled 里)
+    const newlyEnabled = Array.from(savedDisabledSet).filter(x => !currentDisabledSet.has(x));
+
+    // "新增禁用" = 以前没禁用，现在禁用了 (在 currentDisabled 里，不在 savedDisabled 里)
+    const newlyDisabled = Array.from(currentDisabledSet).filter(x => !savedDisabledSet.has(x));
+
+    // D. 判断是否有变化
+    if (newlyEnabled.length === 0 && newlyDisabled.length === 0) {
       setSaveDialogContent({
         title: "配置未发生变化",
         desc: "当前启用的表格结构与上次保存的完全一致。是否确定要覆盖保存？"
@@ -182,30 +191,22 @@ export function SmartDataDisplay({
       return;
     }
 
-    const currentSet = new Set(currentEnabledTables);
-    const savedSet = new Set(savedTables);
-    
-    const added = currentEnabledTables.filter(x => !savedSet.has(x));
-    const removed = savedTables.filter(x => !currentSet.has(x));
-
+    // E. 提示差异
     setSaveDialogContent({
       title: "配置发生变更",
       desc: (
         <div className="space-y-2 text-sm">
           <p>当前配置与上次保存的版本不一致，已为您列出差异：</p>
           <div className="bg-muted p-3 rounded-md space-y-2">
-            {added.length > 0 && (
+            {newlyEnabled.length > 0 && (
               <div className="text-green-600 break-words">
-                <span className="font-bold">[+ 启用]:</span> {added.join(', ')}
+                <span className="font-bold">[+ 重新启用]:</span> {newlyEnabled.join(', ')}
               </div>
             )}
-            {removed.length > 0 && (
+            {newlyDisabled.length > 0 && (
               <div className="text-destructive break-words">
-                <span className="font-bold">[- 禁用]:</span> {removed.join(', ')}
+                <span className="font-bold">[- 新增禁用]:</span> {newlyDisabled.join(', ')}
               </div>
-            )}
-            {added.length === 0 && removed.length === 0 && (
-              <div className="text-muted-foreground">顺序或元数据发生变化</div>
             )}
           </div>
           <p className="pt-2">是否覆盖保存？</p>
@@ -215,12 +216,16 @@ export function SmartDataDisplay({
     setSaveDialogOpen(true);
   }
 
-  // 执行保存请求
+  // 6. 执行保存请求
   const executeSave = async () => {
     setSaveDialogOpen(false);
     setIsSaving(true);
     
-    const activeData = groupedData.filter(t => !disabledTables.has(t.tableName));
+    // 全量发送数据，附带 enabled 标记
+    const tablesToSave = groupedData.map(t => ({
+      ...t,
+      enabled: !disabledTables.has(t.tableName) // 显式标记
+    }));
 
     try {
       const res = await fetch('/api/save-schema', {
@@ -228,7 +233,7 @@ export function SmartDataDisplay({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           timestamp: selectedTimestamp,
-          tables: activeData
+          tables: tablesToSave // 发送全量带状态的数据
         })
       })
       const result = await res.json()
@@ -236,12 +241,16 @@ export function SmartDataDisplay({
       if (result.success) {
         toast({ 
           title: "保存成功", 
-          description: `表结构已更新至 output/schema/${selectedTimestamp}/`,
+          description: `表结构已更新`,
           className: "bg-green-100 border-green-200"
         })
         
-        // 更新本地缓存，但不刷新页面
-        const newSavedSchema = activeData.map(t => ({ tableName: t.tableName }));
+        // 更新本地缓存，用于下次 Diff (不需要刷新页面)
+        // 构造符合 SavedSchemaItem 接口的数据
+        const newSavedSchema = tablesToSave.map(t => ({
+          tableName: t.tableName,
+          enabled: t.enabled
+        }));
         setLastSavedSchema(newSavedSchema);
 
       } else {
@@ -254,7 +263,7 @@ export function SmartDataDisplay({
     }
   }
 
-  // 统计数据
+  // 7. 统计数据
   const rawStats = useMemo(() => {
     const totalStructures = groupedData.length;
     const totalFiles = groupedData.reduce((acc, item) => acc + item.sourceFiles.length, 0);
@@ -289,7 +298,7 @@ export function SmartDataDisplay({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* --- Top: 解析结果概览 (原始数据) --- */}
+      {/* --- Top: 解析结果概览 --- */}
       <div>
         <div className="flex items-center gap-3 mb-2">
           <Database className="w-6 h-6 text-primary" />
@@ -315,8 +324,7 @@ export function SmartDataDisplay({
             key={table.tableName} 
             table={table} 
             isDisabled={disabledTables.has(table.tableName)}
-            // 显式声明参数类型
-            onToggle={(status: 'enabled' | 'disabled') => toggleTableStatus(table.tableName, status)}
+            onToggle={(status) => toggleTableStatus(table.tableName, status)}
           />
         ))}
       </div>
@@ -328,14 +336,13 @@ export function SmartDataDisplay({
           <h2 className="text-2xl font-bold">表结构存储</h2>
         </div>
 
-        {/* 3.1 详细描述*/}
+        {/* 3.1 详细描述 */}
         <div className="bg-muted/30 p-4 rounded-lg mb-6 border">
           <p className="text-sm">
             总共筛选出 <span className="text-lg font-bold text-primary">{filteredStats.validTableCount}</span> 张启用表，
             共有 <span className="text-lg font-bold text-primary">{filteredStats.validRows.toLocaleString()}</span> 行有效数据。
           </p>
           
-          {/* 启用表列表 (Badges) */}
           <div className="mt-4 flex flex-wrap gap-2">
             {groupedData.map(t => {
               const isDis = disabledTables.has(t.tableName);
@@ -411,7 +418,6 @@ export function SmartDataDisplay({
   )
 }
 
-// --- 3. 子组件：TableCard ---
 function TableCard({ table, isDisabled, onToggle }: TableCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const hasErrors = table.parseErrors && table.parseErrors.length > 0;
@@ -485,18 +491,15 @@ function TableCard({ table, isDisabled, onToggle }: TableCardProps) {
 
         <CollapsibleContent>
           <div className={cn("px-6 pb-6 pt-0 space-y-4 transition-opacity", isDisabled && "opacity-50 pointer-events-none select-none grayscale")}>
-            
             {hasErrors && (
               <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md text-sm text-destructive">
                 <ul className="list-disc list-inside space-y-1 text-xs">
-                  {/* 显式声明 map 回调参数类型 */}
-                  {table.parseErrors?.map((err: string, idx: number) => (
+                  {table.parseErrors?.map((err, idx) => (
                     <li key={idx}>{err}</li>
                   ))}
                 </ul>
               </div>
             )}
-
             {table.headers.length > 0 ? (
               <div className="border rounded-md overflow-hidden bg-background">
                 <ScrollArea className="w-full">

@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
 
     // 2. 读取已保存的 Schema 配置 (用于恢复禁用/启用状态)
     let savedSchema = null;
-    const schemaConfigPath = join(process.cwd(), 'output', 'schema', timestamp, 'schema_config.json');
-    
+    const schemaConfigPath = join(process.cwd(), 'output', 'schema', timestamp, 'schema_summary.json');
+
     if (existsSync(schemaConfigPath)) {
       try {
         const configContent = await readFile(schemaConfigPath, 'utf-8');

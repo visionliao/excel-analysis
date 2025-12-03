@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
       headers: t.headers,
       totalRows: t.totalRows,
       sourceFiles: t.sourceFiles,
+      enabled: t.enabled !== false
     }));
+
     const schemaPath = join(schemaDir, 'schema_summary.json')
     await writeFile(schemaPath, JSON.stringify(schemaSummary, null, 2))
 
