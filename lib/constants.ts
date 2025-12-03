@@ -45,7 +45,10 @@ export const TABLE_MAPPING: Record<string, string> = {
   // 综合统计与分析 (Statistics & Performance)
   'Monthly RR Summary':	'monthly_rr_summary',
   'Performance Tracking': 'performance_tracking',
-  'Statstics': 'statistics_general'
+  'Statstics': 'statistics_general',
+
+  // other
+  'spark_room_details': 'room_details'
 };
 
 // 用于从文件名提取基础名称的正则
@@ -53,7 +56,7 @@ export const TABLE_MAPPING: Record<string, string> = {
 export function getBaseTableName(fileName: string): string {
   // 1. 去掉扩展名
   let name = fileName.replace(/\.(xlsx|xls|csv)$/i, '');
-  
+
   // 2. 去掉常见的日期后缀模式，例如 "24-10", "2025-01", "25-2", "(1)"
   name = name.replace(/[\(\s_-]*\d{2,4}[-\.]\d{1,2}[\)\s]*$/, '');
 
@@ -62,6 +65,6 @@ export function getBaseTableName(fileName: string): string {
 
   // 4. 去掉 (1) 这种副本标记
   name = name.replace(/\s*\(\d+\)$/, '');
-  
+
   return name.trim();
 }
