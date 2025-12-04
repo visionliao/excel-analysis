@@ -1,12 +1,13 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Table2, Database, BookOpen, PanelLeftClose, PanelLeft } from "lucide-react"
+import { Table2, Database, BookOpen, PanelLeftClose, PanelLeft, Grid3X3 } from "lucide-react"
 import { useState } from "react"
 
 const menuItems = [
   { icon: Table2, label: "表格处理", id: "table-process" },
-  { icon: Database, label: "导出数据", id: "table-analysis" },
+  { icon: Grid3X3, label: "表格沙盘", id: "table-sandbox" },
+  { icon: Database, label: "导出数据", id: "table-export" },
   { icon: BookOpen, label: "使用说明", id: "guide" },
 ]
 

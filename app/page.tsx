@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { FileUploadArea, type FileItem } from "@/components/excel-data-analysis"
-import { TableAnalysisPanel } from "@/components/data-export"
+import { TableExportPanel } from "@/components/data-export"
 import { GuidePanel } from "@/components/guide-panel"
+import { TableSandboxPanel } from "@/components/table-sandbox"
 import { GroupedTableData, SavedSchemaItem } from "@/components/data-structure-display"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
@@ -110,7 +111,8 @@ export default function Home() {
               setSavedSchema={setSavedSchema}
             />
           )}
-          {activeMenu === "table-analysis" && <TableAnalysisPanel files={files} />}
+          {activeMenu === "table-sandbox" && <TableSandboxPanel />}
+          {activeMenu === "table-export" && <TableExportPanel files={files} />}
           {activeMenu === "guide" && <GuidePanel />}
         </div>
       </main>
