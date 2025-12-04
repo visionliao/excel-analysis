@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFile, readdir, stat } from 'fs/promises'
-import { join } from 'path'
+import { join, relative } from 'path'
 import { parseExcelBuffer } from '@/lib/file-parser'
 import { getBaseTableName, TABLE_MAPPING } from '@/lib/constants'
 import { existsSync } from 'fs'
@@ -30,6 +30,10 @@ export async function POST(request: NextRequest) {
     // 1. 读取 Excel 数据
     const allFilePaths = await getFilesRecursively(targetDir);
     const excelPaths = allFilePaths.filter(p => p.match(/\.(xlsx|xls|csv)$/i));
+    const fileListForFrontend = excelPaths.map(fullPath => {
+      // 获取相对于 output/source/timestamp/ 的路径
+      return relative(targetDir, fullPath);
+    });
     const groupedTables: Record<string, any> = {};
 
     await Promise.all(excelPaths.map(async (filePath) => {
@@ -80,9 +84,9 @@ export async function POST(request: NextRequest) {
       success: true,
       timestamp: timestamp,
       data: Object.values(groupedTables),
-      savedSchema: savedSchema // 返回给前端
+      savedSchema: savedSchema,
+      fileList: fileListForFrontend
     })
-
   } catch (error) {
     console.error('History load error:', error)
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
