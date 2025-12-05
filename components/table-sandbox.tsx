@@ -203,7 +203,7 @@ export function TableSandbox() {
     (params) => setEdges((eds) => addEdge({
       ...params,
       animated: true,
-      style: { stroke: '#2563eb', strokeWidth: 2 },
+      style: { stroke: '#2563eb', strokeWidth: 4 },
       markerEnd: { type: MarkerType.ArrowClosed, color: '#2563eb' },
       label: 'FK'
     }, eds)),
@@ -402,7 +402,11 @@ export function TableSandbox() {
                 fitView
                 minZoom={0.1}
                 maxZoom={1.5}
-                defaultEdgeOptions={{ type: 'smoothstep' }}
+                defaultEdgeOptions={{
+                  type: 'smoothstep',
+                  style: { strokeWidth: 4, stroke: '#2563eb' }, // 加粗
+                  animated: true // 让默认线也动起来
+                }}
                 connectionMode={ConnectionMode.Loose}
             >
                 <Background gap={24} size={1} color="#cbd5e1" />
