@@ -1,3 +1,4 @@
+// app/api/history/list/route.ts
 import { NextResponse } from 'next/server'
 import { readdir, stat } from 'fs/promises'
 import { join } from 'path'

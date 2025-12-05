@@ -1,3 +1,4 @@
+// app/api/history/load/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { readFile, readdir, stat } from 'fs/promises'
 import { join, relative } from 'path'

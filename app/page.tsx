@@ -5,10 +5,11 @@ import { Sidebar } from "@/components/sidebar"
 import { FileUploadArea, type FileItem } from "@/components/excel-data-analysis"
 import { TableExportPanel } from "@/components/data-export"
 import { GuidePanel } from "@/components/guide-panel"
-import { TableSandboxPanel } from "@/components/table-sandbox"
 import { GroupedTableData, SavedSchemaItem } from "@/components/data-structure-display"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { TableSandbox } from "@/components/table-sandbox"
+import { cn } from "@/lib/utils" // 引入 cn 工具函数
 
 export default function Home() {
   const { toast } = useToast()
@@ -27,7 +28,7 @@ export default function Home() {
   useEffect(() => {
     const initData = async () => {
       try {
-        // 1. 获取历史列表
+        // 1. 获取历史列表 (source)
         const listRes = await fetch('/api/history/list');
         const listData = await listRes.json();
 
@@ -50,16 +51,12 @@ export default function Home() {
             setCurrentTimestamp(result.timestamp);
             setSavedSchema(result.savedSchema);
 
-            // 4. 恢复文件列表 (Mock FileItem)
-            // 注意：这里没有真实的 File 对象，只有名字和路径。
-            // 这不影响显示，但如果用户点击"数据分析"会报错(因为没有File)。
-            // 但既然已经加载了结果，用户不需要再次点击"数据分析"。
+            // 4. 恢复文件列表
             if (result.fileList && Array.isArray(result.fileList)) {
               const restoredFiles: FileItem[] = result.fileList.map((path: string, idx: number) => ({
                 id: `history-${idx}`,
                 name: path.split('/').pop() || path,
                 relativePath: path,
-                // file: undefined // 无法恢复 File 对象，但这对于回显已经足够
               }));
               setFiles(restoredFiles);
             }
@@ -72,14 +69,13 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Auto load failed", error);
-        // 静默失败，显示空状态即可
       } finally {
         setIsInitializing(false);
       }
     };
 
     initData();
-  }, []); // 空依赖数组，只在组件挂载时执行一次
+  }, []);
 
   if (isInitializing) {
     return (
@@ -95,13 +91,23 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar activeItem={activeMenu} onMenuChange={setActiveMenu} />
-      <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-        <div className="w-full max-w-full">
+
+      {/*
+         动态调整布局样式：
+         如果是沙盘模式：移除 padding，隐藏 overflow (交给 React Flow 接管)
+         如果是其他模式：保留 padding 和 overflow-auto
+      */}
+      <main className={cn(
+        "flex-1",
+        activeMenu === "table-sandbox"
+          ? "overflow-hidden p-0" // 沙盘模式：全屏，无边距
+          : "overflow-auto p-4 md:p-6 lg:p-8" // 普通模式：有边距，可滚动
+      )}>
+        <div className="w-full h-full max-w-full">
           {activeMenu === "table-process" && (
             <FileUploadArea
               files={files}
               onFilesChange={setFiles}
-
               // 传递状态
               parsedData={parsedData}
               setParsedData={setParsedData}
@@ -111,7 +117,7 @@ export default function Home() {
               setSavedSchema={setSavedSchema}
             />
           )}
-          {activeMenu === "table-sandbox" && <TableSandboxPanel />}
+          {activeMenu === "table-sandbox" && <TableSandbox />}
           {activeMenu === "table-export" && <TableExportPanel files={files} />}
           {activeMenu === "guide" && <GuidePanel />}
         </div>
