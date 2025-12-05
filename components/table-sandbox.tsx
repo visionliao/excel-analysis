@@ -41,6 +41,13 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import SchemaNode, { SchemaNodeType, SchemaNodeData } from './schema-node'
 
+// 定义字段映射的结构
+interface FieldMappingItem {
+  original: string
+  dbField: string
+  comment: string
+}
+
 // 定义 API 返回的数据结构
 interface LoadSummaryResponse {
   success: boolean
@@ -55,6 +62,7 @@ interface LoadSummaryResponse {
     edges: Edge[]
     relationships?: any[]
   }
+  fieldMapping?: Record<string, FieldMappingItem[]>
 }
 
 export function TableSandbox() {
@@ -75,6 +83,16 @@ export function TableSandbox() {
   // 校验状态
   const [validationDialogOpen, setValidationDialogOpen] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+
+  // 字符串标准化辅助函数
+  // 用于消除换行符、多余空格的影响，确保 "订单号\nNO." 能匹配 "订单号 NO."
+  const normalizeHeader = useCallback((str: string) => {
+    if (!str) return '';
+    return String(str)
+      .replace(/[\r\n]+/g, ' ') // 1. 换行符变空格
+      .replace(/\s+/g, ' ')     // 2. 多个连续空格变单个空格
+      .trim();                  // 3. 去除首尾空格
+  }, []);
 
   // 1. 初始化列表
   useEffect(() => {
@@ -133,6 +151,7 @@ export function TableSandbox() {
         const result: LoadSummaryResponse = await res.json()
 
         if (result.success) {
+          // 情况 A: 之前保存过沙盘布局 (table_schema.json) -> 直接恢复，忽略默认映射
           if (result.existingLayout) {
             const restoredNodes = result.existingLayout.nodes.map((n) => ({
               ...n,
@@ -145,9 +164,11 @@ export function TableSandbox() {
             setEdges(result.existingLayout.edges);
             toast({ title: "已恢复沙盘", description: "加载了上次保存的布局和映射" })
           }
+          // 情况 B: 第一次初始化 (从 schema_summary.json) -> 使用 fieldMapping 自动填充
           else if (result.summary) {
             const initialNodes: SchemaNodeType[] = [];
             const activeTables = result.summary.filter(t => t.enabled !== false);
+            const mappingData = result.fieldMapping || {};
 
             if (activeTables.length === 0) {
               toast({ title: "无可用数据", description: "该版本没有启用的表格", variant: "destructive" });
@@ -160,6 +181,8 @@ export function TableSandbox() {
               const row = Math.floor(index / 3);
               const X_OFFSET = 650;
               const Y_OFFSET = 600;
+              // 获取该表对应的字段映射列表
+              const tableMappings = mappingData[table.tableName] || [];
 
               initialNodes.push({
                 id: table.tableName,
@@ -169,12 +192,23 @@ export function TableSandbox() {
                   tableName: table.tableName,
                   originalName: table.originalBaseName,
                   onColumnChange: handleColumnChange,
-                  columns: table.headers.map((h: string) => ({
-                    original: h,
-                    dbField: '',
-                    comment: h,
-                    enabled: true
-                  }))
+                  // 初始化字段：尝试从 mappingData 中查找
+                  columns: table.headers.map((h: string) => {
+                    const normalizedH = normalizeHeader(h);
+                    // 在映射配置中查找当前字段
+                    const matchedField = tableMappings.find(m =>
+                      normalizeHeader(m.original) === normalizedH
+                    );
+
+                    return {
+                      original: h,
+                      // 如果找到映射，填充 dbField，否则留空
+                      dbField: matchedField ? matchedField.dbField : '',
+                      // 如果找到映射，使用映射的 comment，否则使用原始列名
+                      comment: matchedField ? matchedField.comment : normalizedH,
+                      enabled: true
+                    };
+                  })
                 }
               });
             });
@@ -379,7 +413,7 @@ export function TableSandbox() {
           <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
 
           <Button
-            onClick={handleSaveClick} // 绑定校验逻辑
+            onClick={handleSaveClick}
             disabled={isSaving || !selectedTimestamp || nodes.length === 0}
             className="min-w-[140px]"
           >

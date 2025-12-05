@@ -29,10 +29,23 @@ export async function POST(request: NextRequest) {
       existingLayout = JSON.parse(layoutContent);
     }
 
+    // 读取字段映射文件 table_field_mapping.json
+    let fieldMapping = {};
+    const mappingPath = join(process.cwd(), 'mapping', 'table_field_mapping.json');
+    if (existsSync(mappingPath)) {
+      try {
+        const mappingContent = await readFile(mappingPath, 'utf-8');
+        fieldMapping = JSON.parse(mappingContent);
+      } catch (e) {
+        console.warn('Failed to parse field mapping file', e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       summary: summary,
-      existingLayout: existingLayout
+      existingLayout: existingLayout,
+      fieldMapping: fieldMapping
     })
   } catch (error) {
     console.error('Load summary error:', error)
