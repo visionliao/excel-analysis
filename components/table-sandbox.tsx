@@ -17,7 +17,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import { Save, Loader2, RefreshCw, LayoutGrid } from 'lucide-react'
+import { Save, Loader2, LayoutGrid, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -26,6 +26,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 // 引入 SchemaNodeType
 import SchemaNode, { SchemaNodeType, SchemaNodeData } from './schema-node'
@@ -62,6 +72,10 @@ export function TableSandbox() {
   const [selectedTimestamp, setSelectedTimestamp] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  // 校验弹窗状态
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   // 1. 初始化加载时间戳列表 (Schema 模式)
   useEffect(() => {
@@ -193,9 +207,44 @@ export function TableSandbox() {
     [setEdges],
   );
 
-  // 5. 保存回调
-  const handleSave = async () => {
+  // 5. 校验逻辑
+  const validateSchema = () => {
+    const errors: string[] = [];
+
+    nodes.forEach(node => {
+      // 强制类型转换以访问 data
+      const data = node.data as SchemaNodeData;
+
+      data.columns.forEach(col => {
+        // 只有当字段被启用，且 dbField 为空时才报错
+        if (col.enabled && (!col.dbField || col.dbField.trim() === '')) {
+          errors.push(`[${data.tableName}] 字段 "${col.original}" 未填写数据库字段名`);
+        }
+      });
+    });
+
+    return errors;
+  }
+
+  // 6. 点击保存按钮的处理
+  const handleSaveClick = () => {
+    const errors = validateSchema();
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setValidationDialogOpen(true);
+    } else {
+      // 如果没有错误，直接执行保存
+      executeSave();
+    }
+  }
+
+  // 7. 执行保存的逻辑
+  const executeSave = async () => {
     if (!selectedTimestamp) return;
+
+    // 关闭校验弹窗（如果是从弹窗确认进来的）
+    setValidationDialogOpen(false);
     setIsSaving(true);
 
     try {
@@ -204,7 +253,7 @@ export function TableSandbox() {
           ...n,
           data: {
             ...n.data,
-            onColumnChange: undefined // 不保存函数
+            onColumnChange: undefined
           }
         })),
         edges
@@ -233,6 +282,38 @@ export function TableSandbox() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50">
+      {/* --- 校验警告弹窗 --- */}
+      <AlertDialog open={validationDialogOpen} onOpenChange={setValidationDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              存在未完成的字段配置
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              检测到以下已启用的字段尚未填写“数据库字段名”。
+              未填写的字段可能导致生成的 SQL 无效。是否仍要强制保存？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {/* 错误列表滚动区 */}
+          <div className="my-4 max-h-[300px] overflow-y-auto border rounded-md bg-muted/30 p-4">
+            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+              {validationErrors.map((err, idx) => (
+                <li key={idx} className="break-all">{err}</li>
+              ))}
+            </ul>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消 (去修改)</AlertDialogCancel>
+            <AlertDialogAction onClick={executeSave} className="bg-amber-600 hover:bg-amber-700">
+              忽略并强制保存
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* 顶部 Header 区 */}
       <div className="h-20 border-b bg-white px-6 flex items-center justify-between shadow-sm z-10 shrink-0">
         <div className="space-y-1">
@@ -248,7 +329,7 @@ export function TableSandbox() {
             <div className="flex items-center gap-2">
                 <Select value={selectedTimestamp} onValueChange={setSelectedTimestamp} disabled={isLoading}>
                     <SelectTrigger className="w-[240px] h-9 font-mono text-xs">
-                    <SelectValue placeholder="选择版本..." />
+                    <SelectValue placeholder={historyList.length > 0 ? "选择版本..." : "暂无保存的表结构"} />
                     </SelectTrigger>
                     <SelectContent>
                     {historyList.map(ts => (
@@ -263,7 +344,7 @@ export function TableSandbox() {
           <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
 
           <Button
-            onClick={handleSave}
+            onClick={handleSaveClick}
             disabled={isSaving || !selectedTimestamp || nodes.length === 0}
             className="min-w-[140px]"
           >
@@ -296,7 +377,11 @@ export function TableSandbox() {
             <div className="absolute inset-0 flex items-center justify-center text-slate-400">
                 <div className="flex flex-col items-center gap-2">
                     <LayoutGrid size={48} strokeWidth={1} />
-                    <p>请选择一个数据版本以加载沙盘</p>
+                    <p>
+                        {historyList.length === 0
+                            ? "暂无已保存的表结构，请先在“表格处理”中保存"
+                            : "请选择一个数据版本以加载沙盘"}
+                    </p>
                 </div>
             </div>
         )}
