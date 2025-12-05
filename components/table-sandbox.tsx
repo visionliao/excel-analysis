@@ -13,7 +13,9 @@ import {
   Edge,
   MiniMap,
   OnConnect,
-  NodeTypes // 引入类型
+  NodeTypes,
+  Node,
+  ConnectionMode
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -37,7 +39,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-// 引入 SchemaNodeType
 import SchemaNode, { SchemaNodeType, SchemaNodeData } from './schema-node'
 
 // 定义 API 返回的数据结构
@@ -52,39 +53,37 @@ interface LoadSummaryResponse {
   existingLayout?: {
     nodes: SchemaNodeType[]
     edges: Edge[]
+    relationships?: any[]
   }
 }
 
 export function TableSandbox() {
   const { toast } = useToast()
 
-  // 使用 useMemo 缓存 nodeTypes，防止 React Flow 无限重渲染警告
   const nodeTypes = useMemo<NodeTypes>(() => ({
     schemaNode: SchemaNode,
   }), []);
 
-  // 使用泛型 SchemaNodeType
   const [nodes, setNodes, onNodesChange] = useNodesState<SchemaNodeType>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
-  // 业务状态
   const [historyList, setHistoryList] = useState<string[]>([])
   const [selectedTimestamp, setSelectedTimestamp] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  // 校验弹窗状态
+  // 校验状态
   const [validationDialogOpen, setValidationDialogOpen] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
-  // 1. 初始化加载时间戳列表 (Schema 模式)
+  // 1. 初始化列表
   useEffect(() => {
     fetch('/api/schema/list')
       .then(res => res.json())
       .then(data => {
         if (data.success && data.timestamps.length > 0) {
           setHistoryList(data.timestamps)
-          setSelectedTimestamp(data.timestamps[0]) // 默认选中最新的 Schema
+          setSelectedTimestamp(data.timestamps[0])
         } else {
           setHistoryList([]);
           setSelectedTimestamp('');
@@ -99,10 +98,10 @@ export function TableSandbox() {
       nds.map((node) => {
         if (node.id !== tableName) return node;
 
-        const newData = { ...node.data };
-        const newColumns = [...newData.columns];
+        const currentData = node.data;
+        const newColumns = [...currentData.columns];
 
-        // @ts-ignore: 忽略动态 key 赋值的类型检查
+        // @ts-ignore
         newColumns[colIndex] = {
           ...newColumns[colIndex],
           [field]: value
@@ -111,7 +110,7 @@ export function TableSandbox() {
         return {
           ...node,
           data: {
-            ...newData,
+            ...currentData,
             columns: newColumns
           }
         };
@@ -134,7 +133,6 @@ export function TableSandbox() {
         const result: LoadSummaryResponse = await res.json()
 
         if (result.success) {
-          // 情况 A: 之前保存过沙盘布局
           if (result.existingLayout) {
             const restoredNodes = result.existingLayout.nodes.map((n) => ({
               ...n,
@@ -147,15 +145,20 @@ export function TableSandbox() {
             setEdges(result.existingLayout.edges);
             toast({ title: "已恢复沙盘", description: "加载了上次保存的布局和映射" })
           }
-          // 情况 B: 第一次进入
           else if (result.summary) {
             const initialNodes: SchemaNodeType[] = [];
             const activeTables = result.summary.filter(t => t.enabled !== false);
 
+            if (activeTables.length === 0) {
+              toast({ title: "无可用数据", description: "该版本没有启用的表格", variant: "destructive" });
+              setNodes([]);
+              return;
+            }
+
             activeTables.forEach((table, index) => {
               const col = index % 3;
               const row = Math.floor(index / 3);
-              const X_OFFSET = 600;
+              const X_OFFSET = 650;
               const Y_OFFSET = 600;
 
               initialNodes.push({
@@ -182,11 +185,11 @@ export function TableSandbox() {
         } else {
             setNodes([]);
             setEdges([]);
-            toast({ title: "无数据", description: "该版本下没有 Schema Summary 数据", variant: "destructive" });
+            toast({ title: "加载失败", description: "未找到表结构定义文件", variant: "destructive" });
         }
       } catch (error) {
         console.error(error)
-        toast({ title: "加载失败", variant: "destructive" })
+        toast({ title: "请求出错", variant: "destructive" })
       } finally {
         setIsLoading(false)
       }
@@ -210,53 +213,87 @@ export function TableSandbox() {
   // 5. 校验逻辑
   const validateSchema = () => {
     const errors: string[] = [];
-
     nodes.forEach(node => {
-      // 强制类型转换以访问 data
-      const data = node.data as SchemaNodeData;
-
+      const data = node.data;
       data.columns.forEach(col => {
-        // 只有当字段被启用，且 dbField 为空时才报错
+        // 如果字段启用，但没有填数据库字段名，报错
         if (col.enabled && (!col.dbField || col.dbField.trim() === '')) {
           errors.push(`[${data.tableName}] 字段 "${col.original}" 未填写数据库字段名`);
         }
       });
     });
-
     return errors;
   }
 
-  // 6. 点击保存按钮的处理
   const handleSaveClick = () => {
     const errors = validateSchema();
-
     if (errors.length > 0) {
       setValidationErrors(errors);
       setValidationDialogOpen(true);
     } else {
-      // 如果没有错误，直接执行保存
       executeSave();
     }
   }
 
-  // 7. 执行保存的逻辑
+  // 解码 Handle ID (去除前缀并 Base64 解码)
+  const decodeHandleId = (handleId: string | null | undefined): string => {
+    if (!handleId) return '';
+    try {
+      // Handle ID 格式: "source-BASE64" 或 "target-BASE64"
+      const parts = handleId.split('-');
+      if (parts.length < 2) return handleId;
+      const base64Str = parts[1];
+      return decodeURIComponent(escape(atob(base64Str)));
+    } catch (e) {
+      console.error("Failed to decode handle ID", handleId, e);
+      return handleId;
+    }
+  }
+
+  // 6. 保存逻辑
   const executeSave = async () => {
     if (!selectedTimestamp) return;
-
-    // 关闭校验弹窗（如果是从弹窗确认进来的）
     setValidationDialogOpen(false);
     setIsSaving(true);
 
     try {
+      // A. 解析关系 (Relationships)
+      // 遍历所有连线，找到对应的 Source 表/字段 和 Target 表/字段
+      const relationships = edges.map(edge => {
+        // 1. 找 Source Node
+        const sourceNode = nodes.find(n => n.id === edge.source);
+        const targetNode = nodes.find(n => n.id === edge.target);
+
+        // 2. 解码 Handle ID 得到原始字段名
+        const sourceOriginalField = decodeHandleId(edge.sourceHandle);
+        const targetOriginalField = decodeHandleId(edge.targetHandle);
+
+        // 3. 在 Node Data 中找到对应的 Column 配置 (为了获取 dbField)
+        const sourceCol = sourceNode?.data.columns.find(c => c.original === sourceOriginalField);
+        const targetCol = targetNode?.data.columns.find(c => c.original === targetOriginalField);
+
+        return {
+          sourceTable: edge.source,
+          sourceOriginalField: sourceOriginalField,
+          sourceDbField: sourceCol?.dbField || '', // 这里就是你想要的数据库字段名
+          targetTable: edge.target,
+          targetOriginalField: targetOriginalField,
+          targetDbField: targetCol?.dbField || '', // 这里就是你想要的数据库字段名
+          edgeId: edge.id
+        };
+      });
+
+      // B. 准备保存数据
       const schemaData = {
         nodes: nodes.map(n => ({
           ...n,
           data: {
             ...n.data,
-            onColumnChange: undefined
+            onColumnChange: undefined // 剥离函数
           }
         })),
-        edges
+        edges, // 保存原始连线用于恢复画布
+        relationships // 保存解析后的业务关系用于建表
       };
 
       const res = await fetch('/api/save-table-schema', {
@@ -269,11 +306,12 @@ export function TableSandbox() {
       });
 
       if (res.ok) {
-        toast({ title: "保存成功", description: "数据库映射关系已保存", className: "bg-green-100 border-green-200" });
+        toast({ title: "保存成功", description: "数据库映射及关系已生成", className: "bg-green-100 border-green-200" });
       } else {
         toast({ title: "保存失败", variant: "destructive" });
       }
     } catch (error) {
+      console.error(error);
       toast({ title: "保存出错", variant: "destructive" });
     } finally {
       setIsSaving(false);
@@ -282,7 +320,7 @@ export function TableSandbox() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50">
-      {/* --- 校验警告弹窗 --- */}
+      {/* 校验弹窗 */}
       <AlertDialog open={validationDialogOpen} onOpenChange={setValidationDialogOpen}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
@@ -292,11 +330,9 @@ export function TableSandbox() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               检测到以下已启用的字段尚未填写“数据库字段名”。
-              未填写的字段可能导致生成的 SQL 无效。是否仍要强制保存？
+              这会导致生成的建表语句不完整。是否仍要强制保存？
             </AlertDialogDescription>
           </AlertDialogHeader>
-
-          {/* 错误列表滚动区 */}
           <div className="my-4 max-h-[300px] overflow-y-auto border rounded-md bg-muted/30 p-4">
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
               {validationErrors.map((err, idx) => (
@@ -304,7 +340,6 @@ export function TableSandbox() {
               ))}
             </ul>
           </div>
-
           <AlertDialogFooter>
             <AlertDialogCancel>取消 (去修改)</AlertDialogCancel>
             <AlertDialogAction onClick={executeSave} className="bg-amber-600 hover:bg-amber-700">
@@ -314,7 +349,7 @@ export function TableSandbox() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 顶部 Header 区 */}
+      {/* 顶部 Header */}
       <div className="h-20 border-b bg-white px-6 flex items-center justify-between shadow-sm z-10 shrink-0">
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-slate-800">表格沙盘</h2>
@@ -344,7 +379,7 @@ export function TableSandbox() {
           <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
 
           <Button
-            onClick={handleSaveClick}
+            onClick={handleSaveClick} // 绑定校验逻辑
             disabled={isSaving || !selectedTimestamp || nodes.length === 0}
             className="min-w-[140px]"
           >
@@ -354,7 +389,7 @@ export function TableSandbox() {
         </div>
       </div>
 
-      {/* 画布区域 */}
+      {/* 画布 */}
       <div className="flex-1 w-full h-full relative bg-slate-100">
         {nodes.length > 0 ? (
             <ReactFlow
@@ -368,6 +403,7 @@ export function TableSandbox() {
                 minZoom={0.1}
                 maxZoom={1.5}
                 defaultEdgeOptions={{ type: 'smoothstep' }}
+                connectionMode={ConnectionMode.Loose}
             >
                 <Background gap={24} size={1} color="#cbd5e1" />
                 <Controls />

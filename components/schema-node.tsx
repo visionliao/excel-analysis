@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Database } from 'lucide-react'
 
-// 1. 定义每列的数据结构
 export interface ColumnMapping {
   original: string
   dbField: string
@@ -16,7 +15,6 @@ export interface ColumnMapping {
   enabled: boolean
 }
 
-// 2. 定义节点 data 的内部结构
 export interface SchemaNodeData extends Record<string, unknown> {
   tableName: string
   originalName: string
@@ -24,18 +22,26 @@ export interface SchemaNodeData extends Record<string, unknown> {
   onColumnChange: (tableName: string, colIndex: number, field: keyof ColumnMapping, value: any) => void
 }
 
-// 3. 定义完整的节点类型
-// 这告诉 TS：这是一个类型为 'schemaNode' 的节点，它的 data 符合 SchemaNodeData 结构
 export type SchemaNodeType = Node<SchemaNodeData, 'schemaNode'>;
 
-// 4. 组件定义
-// 使用 NodeProps<SchemaNodeType> 来获得精确的类型推断
+// 使用 Base64 编码原始字段名，避免特殊字符导致 React Flow 报错
+export const getSafeHandleId = (prefix: string, value: string) => {
+  try {
+    // 编码：处理中文和特殊字符
+    const safeValue = btoa(unescape(encodeURIComponent(value)));
+    return `${prefix}-${safeValue}`;
+  } catch (e) {
+    console.error("Handle ID generation failed", e);
+    return `${prefix}-${Math.random().toString(36)}`;
+  }
+}
+
+// --- 组件定义 ---
 const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
-  // 这里 data 会自动推断为 SchemaNodeData，不需要强转了
   const { tableName, originalName, columns, onColumnChange } = data;
 
   return (
-    <Card className="min-w-[500px] shadow-xl border-2 border-slate-200 bg-white">
+    <Card className="min-w-[550px] shadow-xl border-2 border-slate-200 bg-white">
       {/* 1. 表头 */}
       <CardHeader className="py-3 px-4 bg-slate-100 border-b flex flex-row items-center justify-between space-y-0 cursor-move">
         <div className="flex flex-col">
@@ -53,37 +59,40 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
       {/* 2. 字段列表 */}
       <CardContent className="p-0">
         {/* 表头行 */}
-        <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 px-4 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
-          <div>原始字段</div>
+        <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
+          <div className="pl-2">原始字段</div>
           <div>数据库字段 (Editable)</div>
           <div>备注 (Editable)</div>
           <div className="text-center">启用</div>
         </div>
 
-        <div className="flex flex-col max-h-[400px] overflow-y-auto bg-white nodrag nowheel cursor-default">
+        {/* 滚动容器 */}
+        <div className="flex flex-col max-h-[400px] overflow-y-auto bg-white nodrag nowheel cursor-default relative">
           {columns.map((col, idx) => (
             <div
               key={`${tableName}-${idx}`}
-              className={`relative group border-b last:border-0 transition-colors py-2 px-4 grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 items-center ${
+              className={`relative group border-b last:border-0 transition-colors py-2 px-6 grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 items-center ${
                 !col.enabled ? 'bg-slate-50 opacity-60' : 'hover:bg-blue-50/50'
               }`}
             >
-
-              {/* 左侧连接点 (Target) */}
+              {/* 左侧连接点 (设置为 source 以允许任意连接) */}
               <Handle
-                type="target"
+                type="source"
                 position={Position.Left}
-                id={`target-${col.original}`}
-                className="!w-3 !h-3 !bg-slate-400 group-hover:!bg-blue-500"
-                style={{ left: '-6px' }}
+                id={getSafeHandleId('target', col.original)}
+                isConnectable={col.enabled}
+                className={`!w-3.5 !h-3.5 !border-2 !border-white transition-colors z-50 ${
+                    col.enabled ? '!bg-slate-400 group-hover:!bg-blue-500 cursor-crosshair' : '!bg-slate-200'
+                }`}
+                style={{ left: '6px' }}
               />
 
-              {/* 1. 原始字段名 */}
-              <div className="text-xs font-medium text-slate-700 truncate" title={col.original}>
+              {/* 1. 原始字段 */}
+              <div className="text-xs font-medium text-slate-700 truncate pl-2" title={col.original}>
                 {col.original}
               </div>
 
-              {/* 2. 数据库字段名 (可编辑) */}
+              {/* 2. 数据库字段 */}
               <div className="relative">
                 <Input
                   className="h-7 text-xs font-mono border-slate-200 focus-visible:ring-1"
@@ -94,7 +103,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 />
               </div>
 
-              {/* 3. 备注 (可编辑) */}
+              {/* 3. 备注 */}
               <Input
                 className="h-7 text-xs border-slate-200 focus-visible:ring-1"
                 value={col.comment}
@@ -103,7 +112,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 onChange={(e) => onColumnChange(tableName, idx, 'comment', e.target.value)}
               />
 
-              {/* 4. 启用开关 */}
+              {/* 4. 开关 */}
               <div className="flex justify-center">
                 <Switch
                   checked={col.enabled}
@@ -112,13 +121,16 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 />
               </div>
 
-              {/* 右侧连接点 (Source) */}
+              {/* 右侧连接点 */}
               <Handle
                 type="source"
                 position={Position.Right}
-                id={`source-${col.original}`}
-                className="!w-3 !h-3 !bg-slate-400 group-hover:!bg-blue-500"
-                style={{ right: '-6px' }}
+                id={getSafeHandleId('source', col.original)}
+                isConnectable={col.enabled}
+                className={`!w-3.5 !h-3.5 !border-2 !border-white transition-colors z-50 ${
+                    col.enabled ? '!bg-slate-400 group-hover:!bg-blue-500 cursor-crosshair' : '!bg-slate-200'
+                }`}
+                style={{ right: '6px' }}
               />
             </div>
           ))}
