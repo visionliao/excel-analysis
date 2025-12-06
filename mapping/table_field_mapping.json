@@ -485,5 +485,25 @@
     { "original": "津贴抵扣 Allowance", "dbField": "allowance_deducted", "comment": "津贴抵扣", "dataType": 3 },
     { "original": "剩余金额 Balance", "dbField": "balance", "comment": "剩余金额", "dataType": 3 },
     { "original": "创建用户 Create User", "dbField": "created_by", "comment": "创建人", "dataType": 0 }
+  ],
+  "work_orders": [
+    { "original": "数据来源", "dbField": "data_source", "comment": "数据来源", "dataType": 0 },
+    { "original": "工单编号", "dbField": "work_order_no", "comment": "工单编号", "dataType": 0 },
+    { "original": "工单类型", "dbField": "order_type", "comment": "工单类型", "dataType": 0 },
+    { "original": "区域", "dbField": "area", "comment": "所属区域", "dataType": 0 },
+    { "original": "位置", "dbField": "location", "comment": "具体位置", "dataType": 0 },
+    { "original": "服务项目", "dbField": "service_item", "comment": "服务内容", "dataType": 0 },
+    { "original": "公寓", "dbField": "apartment", "comment": "公寓名称", "dataType": 0 },
+    { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+    { "original": "申请人", "dbField": "applicant", "comment": "申请人", "dataType": 0 },
+    { "original": "联系方式", "dbField": "contact_info", "comment": "联系电话", "dataType": 0 },
+    { "original": "预计上门日期", "dbField": "expected_visit_date", "comment": "预计日期", "dataType": 5 },
+    { "original": "预计上门时间", "dbField": "expected_visit_time", "comment": "预计时间", "dataType": 0 },
+    { "original": "PMS单号", "dbField": "pms_order_no", "comment": "PMS关联单号", "dataType": 0 },
+    { "original": "状态", "dbField": "status", "comment": "工单状态", "dataType": 0 },
+    { "original": "创建人", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
+    { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
+    { "original": "更新人", "dbField": "updated_by", "comment": "更新人", "dataType": 0 },
+    { "original": "更新时间", "dbField": "updated_at", "comment": "更新时间", "dataType": 6 }
   ]
 }
