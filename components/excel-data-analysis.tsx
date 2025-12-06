@@ -363,6 +363,10 @@ export function FileUploadArea({
           groupedData={parsedData} 
           currentTimestamp={currentTimestamp}
           savedSchemaConfig={savedSchema}
+          onSchemaSave={(newSchema) => {
+            // 当子组件保存成功时，更新父组件(Home)的状态
+            setSavedSchema(newSchema);
+          }}
           onDataReload={(data, ts, config) => {
             setParsedData(data)
             setCurrentTimestamp(ts)

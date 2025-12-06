@@ -51,6 +51,7 @@ export interface SmartDataDisplayProps {
   currentTimestamp?: string 
   savedSchemaConfig?: SavedSchemaItem[] | null
   onDataReload?: (data: GroupedTableData[], timestamp: string, savedConfig: any) => void
+  onSchemaSave?: (newSchema: SavedSchemaItem[]) => void
 }
 
 interface TableCardProps {
@@ -60,11 +61,12 @@ interface TableCardProps {
 }
 
 // --- 主组件 ---
-export function SmartDataDisplay({ 
-  groupedData, 
-  currentTimestamp: initialTimestamp, 
-  savedSchemaConfig, 
-  onDataReload 
+export function SmartDataDisplay({
+  groupedData,
+  currentTimestamp: initialTimestamp,
+  savedSchemaConfig,
+  onDataReload,
+  onSchemaSave
 }: SmartDataDisplayProps) {
   const { toast } = useToast()
   
@@ -239,8 +241,8 @@ export function SmartDataDisplay({
       const result = await res.json()
       
       if (result.success) {
-        toast({ 
-          title: "保存成功", 
+        toast({
+          title: "保存成功",
           description: `表结构已更新`,
           className: "bg-green-100 border-green-200"
         })
@@ -253,6 +255,10 @@ export function SmartDataDisplay({
         }));
         setLastSavedSchema(newSavedSchema);
 
+        // 通知父组件更新全局状态
+        if (onSchemaSave) {
+          onSchemaSave(newSavedSchema);
+        }
       } else {
         toast({ title: "保存失败", description: result.error, variant: "destructive" })
       }

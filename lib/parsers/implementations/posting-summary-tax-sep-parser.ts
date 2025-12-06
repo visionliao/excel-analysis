@@ -29,7 +29,7 @@ export class PostingSummaryTaxSepParser extends BaseFileParser {
     // 通常出现在“账号”或“描述”列
     const keywords = Object.values(row).map(v => String(v).toLowerCase());
     if (keywords.some(k => k.includes('total') || k.includes('合计') || k.includes('sum:'))) {
-      console.log(`[PostingAudit] 🚫 Filtered Summary Row:`, JSON.stringify(row));
+      // console.log(`[PostingAudit] 🚫 Filtered Summary Row:`, JSON.stringify(row));
       return false;
     }
 

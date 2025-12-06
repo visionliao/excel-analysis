@@ -133,6 +133,7 @@ export class DepartureFollowupParser extends BaseFileParser {
           if (this.debugCount < 2) console.log(`  -> Merged Salesman: ${salesVal}`);
         }
       }
+      this.debugCount++;
     }
 
     // 提交最后一条记录

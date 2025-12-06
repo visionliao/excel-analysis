@@ -41,6 +41,7 @@ export const TABLE_MAPPING: Record<string, string> = {
   '能耗统计表':	'energy_consumption_stats',
   'APG Asset data':	'apg_asset_data',
   'Vehicle Level Data-ESG':	'vehicle_data_esg',
+  '工单列表': 'work_orders',
 
   // 综合统计与分析 (Statistics & Performance)
   'Monthly RR Summary':	'monthly_rr_summary',

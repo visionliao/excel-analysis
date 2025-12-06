@@ -1,5 +1,7 @@
 // lib/parsers/base-parser.ts
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import AdmZip from 'adm-zip';
 
 export interface ParseResult {
   headers: string[];
@@ -9,15 +11,28 @@ export interface ParseResult {
 export abstract class BaseFileParser {
 
   public parse(buffer: Buffer, fileName: string): ParseResult {
-    const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true, dateNF: 'yyyy-mm-dd' });
+    const workbook = XLSX.read(buffer, {
+      type: 'buffer',
+      cellDates: true,
+      dateNF: 'yyyy-mm-dd',
+      cellText: false,
+      cellFormula: false,
+      sheetStubs: true,
+      dense: true
+    });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
 
     // 1. 获取原始的二维数组
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-    if (rawData.length === 0) return { headers: [], rows: [] };
 
-    // 2. 找到表头所在行
+    return this.processRawData(rawData);
+  }
+
+  protected processRawData(rawData: any[][]): ParseResult {
+    if (!rawData || rawData.length === 0) return { headers: [], rows: [] };
+
+    // 2. 找到表头所在行 (调用现有的 protected 方法)
     const headerRowIndex = this.findHeaderRowIndex(rawData);
 
     // 3. 提取原始表头
@@ -28,23 +43,122 @@ export abstract class BaseFileParser {
     headers = this.adjustHeaders(headers); 
 
     // 4. 提取数据行
-    // 注意：这里传入修改后的 headers。
-    // 如果 Excel 这一行有 5 格数据，但 headers 只有 4 个，第 5 格数据会被丢弃。
-    // 如果 headers 变成了 5 个，第 5 格数据就会被正确读取。
-    const rawRows = XLSX.utils.sheet_to_json(sheet, {
-      range: headerRowIndex + 1,
-      header: headers 
-    }) as any[];
-
-    // 5. 清洗与转换
-    const validRows = rawRows
-      .filter(row => this.validateRow(row, headers))
-      .map(row => this.transformRow(row, headers));
+    const validRows = rawData
+      .slice(headerRowIndex + 1) // 跳过表头行及之前的所有行
+      .map(rowArr => this.mapRowArrayToObject(rowArr, headers)) // 映射为对象
+      .filter(row => this.validateRow(row, headers)) // 验证
+      .map(row => this.transformRow(row, headers)); // 转换
 
     return {
       headers: headers.filter(h => h && h.trim() !== ''),
       rows: validRows
     };
+  }
+
+  // 将数组行映射为对象行 (模拟 sheet_to_json 的 header 模式)
+  private mapRowArrayToObject(rowArr: any[], headers: string[]): any {
+    const rowObj: any = {};
+    headers.forEach((header, colIndex) => {
+      // 只有当 header 存在时才映射
+      if (header) {
+        rowObj[header] = rowArr[colIndex];
+      }
+    });
+    return rowObj;
+  }
+
+  // -------------------------------------------------------------------------
+  // 专门用于处理那张坏表解释失败的表格(小程序中台导出的工单表，数据室损坏的，会抛出异常：Error: Cannot create a string longer than 0x1fffffe8 characters ，需要特殊处理)
+  // -------------------------------------------------------------------------
+  public async parseWithFallback(buffer: Buffer, fileName: string): Promise<ParseResult> {
+    try {
+      // 优先调用同步的 parse (复用子类的多态行为)
+      return this.parse(buffer, fileName);
+    } catch (error: any) {
+      // 只有当 SheetJS 崩溃，且是 xlsx 文件时，进入 ExcelJS 流程
+      if (fileName.toLowerCase().endsWith('.xlsx')) {
+        console.warn(`[BaseFileParser] Standard parse failed, trying ExcelJS fallback. Error: ${error.message}`);
+        try {
+          // 使用 ExcelJS 读取数据，得到二维数组
+          const rawData = await this.readWithExcelJS(buffer);
+          // 再次复用公共处理逻辑 (这样子类的 adjustHeaders 等 Hook 依然生效)
+          return this.processRawData(rawData);
+        } catch (fbError) {
+          console.error('[BaseFileParser] Fallback failed', fbError);
+          throw error; // 抛出原始错误
+        }
+      }
+      throw error;
+    }
+  }
+
+  // ExcelJS 读取器 (Private)
+  private async readWithExcelJS(buffer: Buffer): Promise<any[][]> {
+    const workbook = new ExcelJS.Workbook();
+
+    try {
+      // 第一次尝试：直接加载
+      await workbook.xlsx.load(buffer as any);
+    } catch (error: any) {
+      console.warn(`[ExcelJS] Standard load failed: ${error.message}. Attempting to sanitize file structure...`);
+      // 如果报错包含 'company' 或其他元数据错误，说明 docProps 损坏
+      // 启动“外科手术”模式
+      try {
+        const sanitizedBuffer = this.sanitizeXlsx(buffer);
+        // 第二次尝试：加载修复后的 Buffer
+        await workbook.xlsx.load(sanitizedBuffer as any);
+      } catch (retryError: any) {
+        console.error(`[ExcelJS] Sanitize and retry also failed: ${retryError.message}`);
+        throw retryError; // 彻底没救了
+      }
+    }
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) return [];
+
+    const data: any[][] = [];
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      const rowValues = Array.isArray(row.values) ? row.values.slice(1) : [];
+      const cleanRow = rowValues.map((val: any) => {
+        if (val && typeof val === 'object') {
+           if (val instanceof Date) return val;
+           if (val.richText) return val.richText.map((t: any) => t.text).join('');
+           if (val.text) return val.text;
+           if (val.result !== undefined) return val.result;
+           return '';
+        }
+        return val;
+      });
+      data.push(cleanRow);
+    });
+    return data;
+  }
+
+  // XLSX 外科手术工具 (删除导致崩溃的元数据文件)
+  private sanitizeXlsx(buffer: Buffer): Buffer {
+    try {
+      const zip = new AdmZip(buffer);
+
+      // 1. 删除文档核心属性 (修复 'company', 'creator' 等 undefined 报错)
+      zip.deleteFile('docProps/core.xml');
+      zip.deleteFile('docProps/app.xml');
+      zip.deleteFile('docProps/custom.xml');
+
+      // 2. 删除计算链 (修复部分因为公式计算导致的加载卡死)
+      // 如果文件很大，calcChain.xml 可能会很大且容易出错，删掉它只影响公式缓存，不影响数据值
+      const entries = zip.getEntries();
+      const calcChainEntry = entries.find(e => e.entryName.includes('calcChain.xml'));
+      if (calcChainEntry) {
+        zip.deleteFile(calcChainEntry);
+      }
+
+      // 返回修复后的 Buffer
+      return zip.toBuffer();
+    } catch (e) {
+      console.error('Failed to sanitize XLSX zip structure', e);
+      // 如果解压都失败了，就原样返回，让外层报错
+      return buffer;
+    }
   }
 
   // Hook: 允许子类修改表头结构 (默认不修改)

@@ -21,5 +21,5 @@ export async function parseExcelBuffer(buffer: Buffer, fileName: string): Promis
 
   // 3. 执行解析
   console.log(`Using parser for ${tableName}: ${parser.constructor.name}`);
-  return parser.parse(buffer, fileName);
+  return await parser.parseWithFallback(buffer, fileName);
 }

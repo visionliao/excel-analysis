@@ -40,7 +40,7 @@ export class PostingDetailFeeCodeParser extends BaseFileParser {
     // 4. 如果“消费”和“付款”【都】是 0 或无效值，则丢弃该行
     if (!isEffectivelyNonZero(consumeVal) && !isEffectivelyNonZero(payVal)) {
       // 可以在这里打印日志查看过滤了多少数据 (可选)
-      console.log(`[Filter] Dropped zero-value row: ${JSON.stringify(row)}`);
+      // console.log(`[Filter] Dropped zero-value row: ${JSON.stringify(row)}`);
       return false;
     }
 
