@@ -55,7 +55,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
   const { tableName, originalName, columns, onColumnChange } = data;
 
   return (
-    <Card className="min-w-[650px] shadow-xl border-2 border-slate-200 bg-white">
+    <Card className="min-w-[520px] shadow-xl border-2 border-slate-200 bg-white">
       {/* 1. 表头 */}
       <CardHeader className="py-3 px-4 bg-slate-100 border-b flex flex-row items-center justify-between space-y-0 cursor-move">
         <div className="flex flex-col">
@@ -73,7 +73,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
       {/* 2. 字段列表 */}
       <CardContent className="p-0">
         {/* 表头行 - 调整 grid 比例以容纳新列 */}
-        <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1.2fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
+        <div className="grid grid-cols-[0.4fr_0.6fr_0.4fr_0.5fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
           <div className="pl-2">原始字段</div>
           <div>数据库字段 (Editable)</div>
           <div>类型 (Select)</div>
@@ -86,7 +86,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
           {columns.map((col, idx) => (
             <div
               key={`${tableName}-${idx}`}
-              className={`relative group border-b last:border-0 transition-colors py-2 px-6 grid grid-cols-[1.5fr_1.5fr_1fr_1.2fr_40px] gap-2 items-center ${
+              className={`relative group border-b last:border-0 transition-colors py-2 px-6 grid grid-cols-[0.4fr_0.6fr_0.4fr_0.5fr_40px] gap-2 items-center ${
                 !col.enabled ? 'bg-slate-50 opacity-60' : 'hover:bg-blue-50/50'
               }`}
             >
