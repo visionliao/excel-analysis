@@ -161,7 +161,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 className={`!w-3.5 !h-3.5 !border-2 !border-white transition-colors z-50 ${
                     col.enabled ? '!bg-slate-400 group-hover:!bg-blue-500 cursor-crosshair' : '!bg-slate-200'
                 }`}
-                style={{ right: '6px' }}
+                style={{ right: '16px' }}
               />
             </div>
           ))}
