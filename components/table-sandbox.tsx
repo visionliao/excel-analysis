@@ -14,8 +14,7 @@ import {
   MiniMap,
   OnConnect,
   NodeTypes,
-  Node,
-  ConnectionMode
+  ConnectionMode,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -39,16 +38,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import SchemaNode, { SchemaNodeType, SchemaNodeData } from './schema-node'
+import SchemaNode, { SchemaNodeType, SchemaNodeData, getSafeHandleId } from './schema-node'
 
-// 定义字段映射的结构
+// 定义字段映射结构
 interface FieldMappingItem {
   original: string
   dbField: string
   comment: string
+  dataType: number
 }
 
-// 定义 API 返回的数据结构
 interface LoadSummaryResponse {
   success: boolean
   summary?: Array<{
@@ -192,10 +191,10 @@ export function TableSandbox() {
                   tableName: table.tableName,
                   originalName: table.originalBaseName,
                   onColumnChange: handleColumnChange,
+
                   // 初始化字段：尝试从 mappingData 中查找
                   columns: table.headers.map((h: string) => {
                     const normalizedH = normalizeHeader(h);
-                    // 在映射配置中查找当前字段
                     const matchedField = tableMappings.find(m =>
                       normalizeHeader(m.original) === normalizedH
                     );
@@ -206,6 +205,8 @@ export function TableSandbox() {
                       dbField: matchedField ? matchedField.dbField : '',
                       // 如果找到映射，使用映射的 comment，否则使用原始列名
                       comment: matchedField ? matchedField.comment : normalizedH,
+                      // 初始化 dataType，默认 0 (VARCHAR)
+                      dataType: matchedField ? (matchedField.dataType ?? 0) : 0,
                       enabled: true
                     };
                   })
@@ -214,7 +215,7 @@ export function TableSandbox() {
             });
             setNodes(initialNodes);
             setEdges([]);
-            toast({ title: "初始化成功", description: `加载了 ${activeTables.length} 张可用表格` })
+            toast({ title: "初始化成功", description: `自动匹配并加载了 ${activeTables.length} 张表格` })
           }
         } else {
             setNodes([]);
@@ -230,7 +231,7 @@ export function TableSandbox() {
     }
 
     loadSchema();
-  }, [selectedTimestamp, handleColumnChange, setNodes, setEdges, toast])
+  }, [selectedTimestamp, handleColumnChange, setNodes, setEdges, toast, normalizeHeader])
 
   // 4. 连线回调
   const onConnect: OnConnect = useCallback(
@@ -250,7 +251,6 @@ export function TableSandbox() {
     nodes.forEach(node => {
       const data = node.data;
       data.columns.forEach(col => {
-        // 如果字段启用，但没有填数据库字段名，报错
         if (col.enabled && (!col.dbField || col.dbField.trim() === '')) {
           errors.push(`[${data.tableName}] 字段 "${col.original}" 未填写数据库字段名`);
         }
@@ -269,11 +269,10 @@ export function TableSandbox() {
     }
   }
 
-  // 解码 Handle ID (去除前缀并 Base64 解码)
+  // 辅助解码
   const decodeHandleId = (handleId: string | null | undefined): string => {
     if (!handleId) return '';
     try {
-      // Handle ID 格式: "source-BASE64" 或 "target-BASE64"
       const parts = handleId.split('-');
       if (parts.length < 2) return handleId;
       const base64Str = parts[1];
@@ -291,8 +290,7 @@ export function TableSandbox() {
     setIsSaving(true);
 
     try {
-      // A. 解析关系 (Relationships)
-      // 遍历所有连线，找到对应的 Source 表/字段 和 Target 表/字段
+      // 解析关系
       const relationships = edges.map(edge => {
         // 1. 找 Source Node
         const sourceNode = nodes.find(n => n.id === edge.source);
@@ -309,21 +307,21 @@ export function TableSandbox() {
         return {
           sourceTable: edge.source,
           sourceOriginalField: sourceOriginalField,
-          sourceDbField: sourceCol?.dbField || '', // 这里就是你想要的数据库字段名
+          sourceDbField: sourceCol?.dbField || '',
           targetTable: edge.target,
           targetOriginalField: targetOriginalField,
-          targetDbField: targetCol?.dbField || '', // 这里就是你想要的数据库字段名
+          targetDbField: targetCol?.dbField || '',
           edgeId: edge.id
         };
       });
 
-      // B. 准备保存数据
+      // 准备保存数据
       const schemaData = {
         nodes: nodes.map(n => ({
           ...n,
           data: {
             ...n.data,
-            onColumnChange: undefined // 剥离函数
+            onColumnChange: undefined
           }
         })),
         edges, // 保存原始连线用于恢复画布
@@ -388,7 +386,7 @@ export function TableSandbox() {
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-slate-800">表格沙盘</h2>
           <p className="text-xs text-muted-foreground">
-            编辑表格字段、备注，并建立表格字段之间的外键关联 (Drag & Connect)
+            编辑表格字段、类型、备注，并建立表格字段之间的外键关联 (Drag & Connect)
           </p>
         </div>
 
@@ -438,7 +436,7 @@ export function TableSandbox() {
                 maxZoom={1.5}
                 defaultEdgeOptions={{
                   type: 'smoothstep',
-                  style: { strokeWidth: 4, stroke: '#2563eb' }, // 加粗
+                  style: { strokeWidth: 4, stroke: '#2563eb' },
                   animated: true // 让默认线也动起来
                 }}
                 connectionMode={ConnectionMode.Loose}

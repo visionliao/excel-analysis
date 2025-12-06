@@ -8,21 +8,19 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Database } from 'lucide-react'
 
-export interface ColumnMapping {
-  original: string
-  dbField: string
-  comment: string
-  enabled: boolean
-}
-
-export interface SchemaNodeData extends Record<string, unknown> {
-  tableName: string
-  originalName: string
-  columns: ColumnMapping[]
-  onColumnChange: (tableName: string, colIndex: number, field: keyof ColumnMapping, value: any) => void
-}
-
-export type SchemaNodeType = Node<SchemaNodeData, 'schemaNode'>;
+// Postgres 数据类型集合 (下标即 value)
+export const POSTGRES_TYPES = [
+  "VARCHAR(255)", // 0
+  "TEXT",         // 1
+  "INTEGER",      // 2
+  "DECIMAL(18,2)",// 3
+  "BOOLEAN",      // 4
+  "DATE",         // 5
+  "TIMESTAMP",    // 6
+  "BIGINT",       // 7
+  "JSONB",        // 8
+  "SERIAL"        // 9
+];
 
 // 使用 Base64 编码原始字段名，避免特殊字符导致 React Flow 报错
 export const getSafeHandleId = (prefix: string, value: string) => {
@@ -36,12 +34,28 @@ export const getSafeHandleId = (prefix: string, value: string) => {
   }
 }
 
-// --- 组件定义 ---
+export interface ColumnMapping {
+  original: string
+  dbField: string
+  comment: string
+  dataType: number
+  enabled: boolean
+}
+
+export interface SchemaNodeData extends Record<string, unknown> {
+  tableName: string
+  originalName: string
+  columns: ColumnMapping[]
+  onColumnChange: (tableName: string, colIndex: number, field: keyof ColumnMapping, value: any) => void
+}
+
+export type SchemaNodeType = Node<SchemaNodeData, 'schemaNode'>;
+
 const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
   const { tableName, originalName, columns, onColumnChange } = data;
 
   return (
-    <Card className="min-w-[550px] shadow-xl border-2 border-slate-200 bg-white">
+    <Card className="min-w-[650px] shadow-xl border-2 border-slate-200 bg-white">
       {/* 1. 表头 */}
       <CardHeader className="py-3 px-4 bg-slate-100 border-b flex flex-row items-center justify-between space-y-0 cursor-move">
         <div className="flex flex-col">
@@ -58,10 +72,11 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
 
       {/* 2. 字段列表 */}
       <CardContent className="p-0">
-        {/* 表头行 */}
-        <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
+        {/* 表头行 - 调整 grid 比例以容纳新列 */}
+        <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1.2fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
           <div className="pl-2">原始字段</div>
           <div>数据库字段 (Editable)</div>
+          <div>类型 (Select)</div>
           <div>备注 (Editable)</div>
           <div className="text-center">启用</div>
         </div>
@@ -71,11 +86,11 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
           {columns.map((col, idx) => (
             <div
               key={`${tableName}-${idx}`}
-              className={`relative group border-b last:border-0 transition-colors py-2 px-6 grid grid-cols-[1.5fr_1.5fr_1.5fr_40px] gap-2 items-center ${
+              className={`relative group border-b last:border-0 transition-colors py-2 px-6 grid grid-cols-[1.5fr_1.5fr_1fr_1.2fr_40px] gap-2 items-center ${
                 !col.enabled ? 'bg-slate-50 opacity-60' : 'hover:bg-blue-50/50'
               }`}
             >
-              {/* 左侧连接点 (设置为 source 以允许任意连接) */}
+              {/* 左侧连接点 */}
               <Handle
                 type="source"
                 position={Position.Left}
@@ -103,7 +118,23 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 />
               </div>
 
-              {/* 3. 备注 */}
+              {/* 3. 数据类型选择 */}
+              <div className="relative">
+                <select
+                  className="h-7 w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  value={col.dataType ?? 0} // 默认 0 (VARCHAR)
+                  disabled={!col.enabled}
+                  onChange={(e) => onColumnChange(tableName, idx, 'dataType', parseInt(e.target.value))}
+                >
+                  {POSTGRES_TYPES.map((type, typeIdx) => (
+                    <option key={typeIdx} value={typeIdx}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 4. 备注 */}
               <Input
                 className="h-7 text-xs border-slate-200 focus-visible:ring-1"
                 value={col.comment}
@@ -112,7 +143,7 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
                 onChange={(e) => onColumnChange(tableName, idx, 'comment', e.target.value)}
               />
 
-              {/* 4. 开关 */}
+              {/* 5. 开关 */}
               <div className="flex justify-center">
                 <Switch
                   checked={col.enabled}
