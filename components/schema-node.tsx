@@ -10,16 +10,16 @@ import { Database } from 'lucide-react'
 
 // Postgres 数据类型集合 (下标即 value)
 export const POSTGRES_TYPES = [
-  "VARCHAR(255)", // 0
-  "TEXT",         // 1
-  "INTEGER",      // 2
-  "DECIMAL(18,2)",// 3
-  "BOOLEAN",      // 4
-  "DATE",         // 5
-  "TIMESTAMP",    // 6
-  "BIGINT",       // 7
-  "JSONB",        // 8
-  "SERIAL"        // 9
+  "VARCHAR(255)", // 0 变长字符串，最大长度限制为 255 个字符。
+  "TEXT",         // 1 变长字符串，没有具体的长度限制（实际上限制约为 1GB）。
+  "INTEGER",      // 2 标准的 4 字节整数。范围大约是 -21亿 到 +21亿。
+  "DECIMAL(18,2)",// 3 精确的定点数。18 代表总位数，2 代表小数位数。也就是说，它能存储最大 16 位整数 + 2 位小数的数字。
+  "BOOLEAN",      // 4 布尔值，存储 TRUE (真) 或 FALSE (假)。
+  "DATE",         // 5 仅存储日期（年-月-日），不包含时间（时:分:秒）。
+  "TIMESTAMP",    // 6 时间戳，存储 日期 + 时间（年-月-日 时:分:秒.毫秒）。
+  "BIGINT",       // 7 8 字节大整数。范围非常大（900亿亿左右）。
+  "JSONB",        // 8 二进制 JSON 数据。
+  "SERIAL"        // 9 自增整数（4 字节）。
 ];
 
 // 使用 Base64 编码原始字段名，避免特殊字符导致 React Flow 报错
