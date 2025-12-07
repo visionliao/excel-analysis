@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     // 2. 服务端加载数据 (Schema + Data)
     console.time('LoadData');
-    const tables = await loadSchemaAndData(timestamp);
+    const fullData = await loadSchemaAndData(timestamp);
     console.timeEnd('LoadData');
 
     // 3. 将解析好、准备导出的数据缓存到磁盘
@@ -26,8 +26,10 @@ export async function POST(req: NextRequest) {
     const cacheDir = join(process.cwd(), 'output', 'cache');
     await mkdir(cacheDir, { recursive: true });
     const cachePath = join(cacheDir, `ready_to_export_${timestamp}.json`);
-    await writeFile(cachePath, JSON.stringify(tables));
+    await writeFile(cachePath, JSON.stringify(fullData));
     console.log(`[DB Check] Data cached to ${cachePath}`);
+
+    const tables = fullData.tables;
 
     // 4. 连接数据库进行比对
     client = new Client({ connectionString: targetConnectionString });

@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: '缓存不存在，请重新检查数据' }, { status: 400 });
     }
     const cacheContent = await readFile(cachePath, 'utf-8');
-    const tables = JSON.parse(cacheContent);
+    const { tables, relationships } = JSON.parse(cacheContent);
 
     client = new Client({ connectionString: targetConnectionString, statement_timeout: 60000 });
     await client.connect();
@@ -237,10 +237,45 @@ export async function POST(req: NextRequest) {
         }
     }
 
+    // 建立外键关联
+    if (relationships && relationships.length > 0) {
+        console.log(`[DB Export] Processing ${relationships.length} foreign keys...`);
+
+        for (const rel of relationships) {
+            // 确保源表和目标表都在本次导出的列表中（防止引用了被禁用的表导致报错）
+            const sourceExists = tables.find((t: any) => t.tableName === rel.sourceTable);
+            const targetExists = tables.find((t: any) => t.tableName === rel.targetTable);
+
+            if (sourceExists && targetExists) {
+                const constraintName = `fk_${rel.sourceTable}_${rel.sourceDbField}`;
+
+                // 构造 ALTER TABLE 语句
+                // 注意：这里假设 targetDbField 也是唯一的或者是主键。
+                // 如果 targetDbField 不是 id，Postgres 要求它必须有 UNIQUE 约束。
+                // 在沙盘模式下，如果用户连接了非 ID 字段，可能会在这里报错，这是预期的（提示用户设计错误）。
+                const sql = `
+                    ALTER TABLE "${rel.sourceTable}"
+                    ADD CONSTRAINT "${constraintName}"
+                    FOREIGN KEY ("${rel.sourceDbField}")
+                    REFERENCES "${rel.targetTable}" ("${rel.targetDbField}");
+                `;
+
+                try {
+                    await client.query(sql);
+                    console.log(`  Added FK: ${rel.sourceTable}.${rel.sourceDbField} -> ${rel.targetTable}.${rel.targetDbField}`);
+                } catch (fkError: any) {
+                    // 外键建立失败（例如数据不一致，或者目标字段不是唯一索引）
+                    // 我们可以选择报错回滚，或者仅打印警告继续。
+                    // 为了保证数据能进去，这里建议先只打印警告，不回滚数据。
+                    console.warn(`  [FK Warning] Failed to add foreign key ${constraintName}: ${fkError.message}`);
+                }
+            }
+        }
+    }
+
     await client.query('COMMIT');
     console.log(`✅ [DB Export] Successfully committed ${tables.length} tables.`);
     return NextResponse.json({ success: true });
-
   } catch (error: any) {
     if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
     console.error('Database export error:', error);

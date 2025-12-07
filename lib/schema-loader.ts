@@ -20,7 +20,17 @@ export interface TableExportContext {
   totalRows: number
 }
 
-export async function loadSchemaAndData(timestamp: string): Promise<TableExportContext[]> {
+export interface SchemaRelationship {
+  sourceTable: string
+  sourceDbField: string
+  targetTable: string
+  targetDbField: string
+}
+
+export async function loadSchemaAndData(timestamp: string): Promise<{
+  tables: TableExportContext[],
+  relationships: SchemaRelationship[]
+}> {
   const baseDir = process.cwd();
 
   const schemaPath = join(baseDir, 'output', 'schema', timestamp, 'table_schema.json');
@@ -38,6 +48,7 @@ export async function loadSchemaAndData(timestamp: string): Promise<TableExportC
   const schemaJson = JSON.parse(schemaContent);
   const nodes = schemaJson.nodes || [];
 
+  const relationships: SchemaRelationship[] = schemaJson.relationships || [];
   // 2. 读取并解析源文件 (严格复用 parseExcelBuffer)
   const groupedRawData: Record<string, any[]> = {}; 
 
@@ -74,7 +85,7 @@ export async function loadSchemaAndData(timestamp: string): Promise<TableExportC
   }
 
   // 3. 组装结果 (Mapping Only, No Filtering)
-  const result: TableExportContext[] = [];
+  const tables: TableExportContext[] = [];
 
   for (const node of nodes) {
     const tableDef = node.data;
@@ -102,7 +113,7 @@ export async function loadSchemaAndData(timestamp: string): Promise<TableExportC
       return newRow;
     });
 
-    result.push({
+    tables.push({
       tableName: tableName,
       columns: activeColumns,
       rows: mappedRows,
@@ -110,5 +121,5 @@ export async function loadSchemaAndData(timestamp: string): Promise<TableExportC
     });
   }
 
-  return result;
+  return { tables, relationships };
 }
