@@ -118,7 +118,7 @@ export default function Home() {
             />
           )}
           {activeMenu === "table-sandbox" && <TableSandbox />}
-          {activeMenu === "table-export" && <TableExportPanel files={files} />}
+          {activeMenu === "table-export" && <TableExportPanel />}
           {activeMenu === "guide" && <GuidePanel />}
         </div>
       </main>

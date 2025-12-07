@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from 'pg'
-import { loadSchemaAndData } from '@/lib/schema-loader'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
 // 1. 数据清洗与恢复中心
 class DataSanitizer {
@@ -40,43 +42,45 @@ class DataSanitizer {
    * 能够处理被截断的时间、非标准分隔符等
    */
   private static recoverDate(rawStr: string): any {
-    // 1. 尝试直接转换
-    let d = new Date(rawStr);
+    let cleanStr = rawStr;
+    if (cleanStr.includes(' ')) {
+        const parts = cleanStr.split(' ');
+        // 尝试取第一部分，如果看起来像日期
+        if (parts[0].includes('/') || parts[0].includes('-') || parts[0].includes('.')) {
+            cleanStr = parts[0];
+        }
+    }
+
+    let d = new Date(cleanStr);
     if (!isNaN(d.getTime())) return d;
 
-    // 2. 被截断的时间 (例如 "24/10/31 05:")
-    // 动作：按空格切割，只取第一部分日期
-    if (rawStr.includes(' ')) {
-      const parts = rawStr.split(' ');
-      // 假设第一部分是日期
-      const datePart = parts[0];
-      d = new Date(datePart);
-      if (!isNaN(d.getTime())) {
-        console.warn(`[DataSanitizer] Fixed broken date: "${rawStr}" -> "${datePart}"`);
-        return d;
-      }
+    // 手动解析非标准格式 YY/MM/DD
+    if (cleanStr.includes('/') || cleanStr.includes('.')) {
+        const parts = cleanStr.split(/[\/\.]/);
+        if (parts.length === 3) {
+            let y = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            const day = parseInt(parts[2]);
+            if (y < 100) y += (y > 50 ? 1900 : 2000);
+            const isoStr = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            d = new Date(isoStr);
+            if (!isNaN(d.getTime())) {
+                console.log(`[DataSanitizer] Fixed date: "${rawStr}" -> "${isoStr}"`);
+                return d;
+            }
+        }
     }
-
-    // 3. Excel 格式可能出现的其他异常 (可在此扩展)
-    // 比如 2024.01.01 转 2024-01-01
-    if (rawStr.includes('.')) {
-        const fixed = rawStr.replace(/\./g, '-');
-        d = new Date(fixed);
-        if (!isNaN(d.getTime())) return d;
-    }
-
-    return rawStr; // 实在修不好，原样返回
+    return rawStr;
   }
 
   /**
    * 数值修复策略
    */
   private static recoverNumber(rawStr: string): string {
-    // 移除千分位逗号 (例如 "1,234" -> "1234")
-    if (rawStr.includes(',')) {
-      return rawStr.replace(/,/g, '');
-    }
-    // 可以在这里扩展：移除 '$', '¥' 等符号
+    if (rawStr.includes(',')) return rawStr.replace(/,/g, '');
+    if (rawStr.startsWith('¥') || rawStr.startsWith('$')) return rawStr.substring(1);
+    // 处理 (100) -> -100
+    if (rawStr.startsWith('(') && rawStr.endsWith(')')) return '-' + rawStr.slice(1, -1);
     return rawStr;
   }
 
@@ -85,8 +89,8 @@ class DataSanitizer {
    */
   private static recoverBoolean(rawStr: string): string {
     const lower = rawStr.toLowerCase();
-    if (['yes', 'y', 'on', 'ok'].includes(lower)) return 'true';
-    if (['no', 'n', 'off'].includes(lower)) return 'false';
+    if (['yes', 'y', 'on', 'ok', '1'].includes(lower)) return 'true';
+    if (['no', 'n', 'off', '0'].includes(lower)) return 'false';
     return rawStr;
   }
 }
@@ -129,7 +133,7 @@ function validateValue(value: any, sqlType: string): string | null {
   return null;
 }
 
-// 3. 主 API 逻辑
+// 3. 导出主逻辑
 export async function POST(req: NextRequest) {
   let client: Client | null = null;
   try {
@@ -140,7 +144,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Missing params' }, { status: 400 });
     }
 
-    const tables = await loadSchemaAndData(timestamp);
+    // 读取缓存
+    const cachePath = join(process.cwd(), 'output', 'cache', `ready_to_export_${timestamp}.json`);
+    if (!existsSync(cachePath)) {
+        return NextResponse.json({ success: false, error: '缓存不存在，请重新检查数据' }, { status: 400 });
+    }
+    const cacheContent = await readFile(cachePath, 'utf-8');
+    const tables = JSON.parse(cacheContent);
 
     client = new Client({ connectionString: targetConnectionString, statement_timeout: 60000 });
     await client.connect();
@@ -153,12 +163,12 @@ export async function POST(req: NextRequest) {
 
         // 重建表结构
         await client.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
-        const colDefs = columns.map(c => `"${c.name}" ${c.type}`).join(',\n');
+        const colDefs = columns.map((c: any) => `"${c.name}" ${c.type}`).join(',\n');
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
 
         // 插入数据
         if (rows.length > 0) {
-            const keys = columns.map(c => `"${c.name}"`).join(', ');
+            const keys = columns.map((c: any) => `"${c.name}"`).join(', ');
             const BATCH_SIZE = 500;
 
             for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -167,40 +177,41 @@ export async function POST(req: NextRequest) {
                 const placeholders: string[] = [];
                 let paramIndex = 1;
 
-                // --- 逐行处理 ---
+                // 逐行处理
                 for (let rowIndex = 0; rowIndex < batch.length; rowIndex++) {
                     const row = batch[rowIndex];
                     const rowPlaceholders: string[] = [];
 
-                    // --- 逐列处理 ---
+                    // 逐行处理
                     for (const col of columns) {
-                        let val = row[col.originalName]; 
+                        let val = row[col.originalName];
 
                         // 1. 初次校验
                         let errorMsg = validateValue(val, col.type);
-
-                        // 2. 如果校验失败，尝试【智能修复】
                         if (errorMsg) {
                             const originalVal = val;
-                            // 调用清洗器尝试修复
+                            // 尝试修复
                             val = DataSanitizer.tryRecover(val, col.type);
-
-                            // 再次校验修复后的值
+                            // 再次校验
                             errorMsg = validateValue(val, col.type);
 
                             // 如果依然失败，说明这数据真没救了 -> 抛出异常
                             if (errorMsg) {
+                                // 构造详细错误，包含整行数据
                                 const errorDetail = {
-                                    tableName: tableName || 'Unknown Table',
-                                    rowNumber: i + rowIndex + 2,
-                                    columnName: col.originalName || 'Unknown Column',
-                                    targetType: col.type || 'Unknown Type',
-                                    invalidValue: String(originalVal), // 记录原始错误值
-                                    message: errorMsg
+                                    tableName: tableName,
+                                    rowNumber: i + rowIndex + 1,
+                                    columnName: col.originalName,
+                                    targetType: col.type,
+                                    invalidValue: String(originalVal),
+                                    message: errorMsg,
+                                    // 打印整行数据，方便排查
+                                    rowData: row
                                 };
 
-                                console.error('------- EXPORT VALIDATION ERROR -------');
+                                console.error('\n================ EXPORT VALIDATION ERROR ================');
                                 console.error(JSON.stringify(errorDetail, null, 2));
+                                console.error('=========================================================\n');
 
                                 await client.query('ROLLBACK');
                                 return NextResponse.json({
@@ -214,7 +225,6 @@ export async function POST(req: NextRequest) {
 
                         // 处理空值写入
                         if (val === undefined || val === '') val = null;
-
                         values.push(val);
                         rowPlaceholders.push(`$${paramIndex++}`);
                     }
@@ -228,18 +238,13 @@ export async function POST(req: NextRequest) {
     }
 
     await client.query('COMMIT');
+    console.log(`✅ [DB Export] Successfully committed ${tables.length} tables.`);
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    if (client) {
-        try { await client.query('ROLLBACK'); } catch (e) {}
-    }
-    console.error('Database export error:', error);
 
-    return NextResponse.json({ 
-        success: false, 
-        errorType: 'DB_ERROR',
-        error: error.message || 'Unknown database error' 
-    }, { status: 500 });
+  } catch (error: any) {
+    if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
+    console.error('Database export error:', error);
+    return NextResponse.json({ success: false, errorType: 'DB_ERROR', error: error.message }, { status: 500 });
   } finally {
     if (client) await client.end();
   }

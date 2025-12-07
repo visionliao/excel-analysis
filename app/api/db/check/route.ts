@@ -2,12 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from 'pg'
 import { loadSchemaAndData } from '@/lib/schema-loader'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
 
 export async function POST(req: NextRequest) {
   let client: Client | null = null;
   try {
     const { connectionString, timestamp } = await req.json();
-
     // 1. 优先使用前端传来的地址，如果为空，则读取服务端环境变量兜底
     const targetConnectionString = connectionString || process.env.POSTGRES_URL;
 
@@ -16,15 +17,25 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. 服务端加载数据 (Schema + Data)
+    console.time('LoadData');
     const tables = await loadSchemaAndData(timestamp);
+    console.timeEnd('LoadData');
 
-    // 3. 连接数据库
+    // 3. 将解析好、准备导出的数据缓存到磁盘
+    // 这样下一步“导出”时就不用再解析了，直接读这个文件，既快又保证数据绝对一致
+    const cacheDir = join(process.cwd(), 'output', 'cache');
+    await mkdir(cacheDir, { recursive: true });
+    const cachePath = join(cacheDir, `ready_to_export_${timestamp}.json`);
+    await writeFile(cachePath, JSON.stringify(tables));
+    console.log(`[DB Check] Data cached to ${cachePath}`);
+
+    // 4. 连接数据库进行比对
     client = new Client({ connectionString: targetConnectionString });
     await client.connect();
 
     const report = [];
 
-    // 4. 执行对比逻辑
+    // 5. 执行对比逻辑
     for (const table of tables) {
       const targetTableName = table.tableName;
       const targetColumns = table.columns;
@@ -46,28 +57,22 @@ export async function POST(req: NextRequest) {
           details: targetColumns.map(c => `${c.name} (${c.type})`)
         });
       } else {
-        // 检查结构变更
+        // 检查结构变更 (列名是否存在)
         const checkColsRes = await client.query(
           `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1;`,
           [targetTableName]
         );
         const dbColumnNames = checkColsRes.rows.map((r: any) => r.column_name);
-
-        // 【关键修复】显式定义数组类型，解决 "Implicit any[]" 报错
         const changes: string[] = [];
 
-        // 检查新增列 (沙盘有，DB没)
         targetColumns.forEach(col => {
           if (!dbColumnNames.includes(col.name)) changes.push(`新增列: ${col.name}`);
         });
-
-        // 检查删除列 (DB有，沙盘没)
         const targetColNames = targetColumns.map(c => c.name);
         dbColumnNames.forEach((dbColName: string) => {
-          // 忽略 id 字段，因为我们会自动创建 id，如果数据库里有 id 但沙盘没配，不算差异
-          if (dbColName !== 'id' && !targetColNames.includes(dbColName)) {
-            changes.push(`删除列: ${dbColName}`);
-          }
+            if (dbColName !== 'id' && !targetColNames.includes(dbColName)) {
+                changes.push(`删除列: ${dbColName}`);
+            }
         });
 
         const countRes = await client.query(`SELECT COUNT(*) FROM "${targetTableName}"`);
@@ -77,17 +82,19 @@ export async function POST(req: NextRequest) {
            report.push({
               tableName: targetTableName,
               status: 'SCHEMA_CHANGE',
-              message: '表结构不一致，将重建表。',
+              message: '表结构变更，将重建表。',
               newRowCount: table.totalRows,
               oldRowCount: dbRowCount,
               diff: changes
            });
         } else {
            const diff = table.totalRows - dbRowCount;
+           // 如果行数一样，且没有结构变化，理论上不需要操作，但为了保证数据一致性，通常还是全量覆盖
+           // 这里仅作提示
            report.push({
               tableName: targetTableName,
               status: 'DATA_UPDATE',
-              message: `结构一致。${diff > 0 ? '新增 ' + diff + ' 行' : diff < 0 ? '减少 ' + Math.abs(diff) + ' 行' : '行数一致'}`,
+              message: `结构一致。数据库现有 ${dbRowCount} 行，本次将写入 ${table.totalRows} 行。`,
               newRowCount: table.totalRows,
               oldRowCount: dbRowCount
            });

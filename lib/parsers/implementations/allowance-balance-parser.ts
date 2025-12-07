@@ -1,9 +1,9 @@
+// lib/parsers/implementations/allowance-balance-parser.ts
 import * as XLSX from 'xlsx';
 import { BaseFileParser, ParseResult } from '../base-parser';
 
 // 公寓津贴当期期结余报表.xls ，这个表剧恶心，一行数据分几行显示
 export class AllowanceBalanceParser extends BaseFileParser {
-  // 定义最终想要输出的列名常量，确保各处拼写一致
   private readonly COL_ORDER = '订单号 NO.';
   private readonly COL_ROOM = '房号 Rmno';
   private readonly COL_NAME = '名称 Name';
@@ -16,6 +16,7 @@ export class AllowanceBalanceParser extends BaseFileParser {
   public parse(buffer: Buffer, fileName: string): ParseResult {
     const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true, dateNF: 'yyyy-mm-dd' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
     if (rawData.length === 0) return { headers: [], rows: [] };
 
@@ -33,6 +34,13 @@ export class AllowanceBalanceParser extends BaseFileParser {
 
     for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
+
+      // 1. 检查是否为垃圾行
+      if (this.isGarbageRow(row)) {
+        console.log('Allowance-balance-parser Skipping garbage row:', JSON.stringify(row));
+        continue;
+      }
+
       const orderNo = row[this.COL_ORDER];
 
       if (orderNo && String(orderNo).trim() !== '') {
@@ -54,17 +62,17 @@ export class AllowanceBalanceParser extends BaseFileParser {
         }
       }
     }
+
     if (currentRecord) mergedRows.push(currentRecord);
 
-    // 不再依赖 filter，而是直接定义一个符合视觉要求的数组
     const finalHeaders = [
       this.COL_ORDER,
       this.COL_ROOM,
       this.COL_NAME,
       this.COL_TOTAL,
       this.COL_USE,
-      this.COL_BAL,   // 余额在前
-      this.COL_CYCLE, // 账期在后
+      this.COL_BAL,
+      this.COL_CYCLE,
       this.COL_DATE
     ];
 
@@ -75,9 +83,30 @@ export class AllowanceBalanceParser extends BaseFileParser {
   }
 
   /**
-   * 1. 物理映射：Index -> Key
-   * 策略：不确定的列全部映射为 TEMP，防止覆盖，最后统一清洗
+   * 垃圾行判定逻辑
+   * 只要包含特定的关键词，即视为无效行
    */
+  private isGarbageRow(row: any): boolean {
+    const values = Object.values(row).map(v => String(v).trim().toLowerCase());
+
+    // 检查每一列的值
+    for (const val of values) {
+      // 1. 包含 "page" (处理页码行，如 "Page (1/1)")
+      if (val.includes('page')) return true;
+
+      // 2. 包含 "费用合计" (处理汇总行)
+      if (val.includes('费用合计')) return true;
+
+      // 3. 包含 "ap019" (根据之前的日志，这是页脚打印代码)
+      if (val.includes('ap019')) return true;
+
+      // 4. 精确匹配 "1)" (防止漏网之鱼)
+      if (val === '1)') return true;
+    }
+
+    return false;
+  }
+
   protected adjustHeaders(headers: string[]): string[] {
     const mappedHeaders: string[] = [];
 
@@ -106,32 +135,30 @@ export class AllowanceBalanceParser extends BaseFileParser {
    * 2. 数据转换：清洗 TEMP -> 正式字段
    */
   protected transformRow(row: any, headers: string[]): any {
-    const newRow = super.transformRow(row, headers);
+    const newRow: any = {};
+    Object.keys(row).forEach(k => newRow[k] = row[k]);
 
-    // 1. 合并余额
     const bal = newRow['TEMP_BAL_1'] || newRow['TEMP_BAL_2'] || newRow['TEMP_BAL_3'];
     newRow[this.COL_BAL] = bal !== undefined ? bal : '';
 
-    // 2. 处理账期
     newRow[this.COL_CYCLE] = newRow['TEMP_CYCLE'] || '';
 
-    // 3. 处理生效时间 (格式化)
-    const rawDate = row['TEMP_DATE']; // 从原始 row 读，保留对象类型
+    const rawDate = row['TEMP_DATE'];
     if (rawDate instanceof Date) {
       newRow[this.COL_DATE] = this.formatDateTimeSpecific(rawDate);
     } else {
       newRow[this.COL_DATE] = newRow['TEMP_DATE'] || '';
     }
 
-    // 4. 清理 TEMP 垃圾
     delete newRow['TEMP_BAL_1']; delete newRow['TEMP_BAL_2']; delete newRow['TEMP_BAL_3'];
-    delete newRow['TEMP_CYCLE'];
-    delete newRow['TEMP_DATE'];
+    delete newRow['TEMP_CYCLE']; delete newRow['TEMP_DATE'];
 
     return newRow;
   }
 
-  // parse 内部已处理逻辑，此处返回 true 即可
+  // 覆盖基类方法，强制返回 true
+  // 因为我们已经在 parse 循环内部通过 isGarbageRow 进行了更精准的过滤
+  // 这里的通用过滤必须关掉，否则会误删数据
   protected validateRow(row: any, headers: string[]): boolean {
     return true;
   }
