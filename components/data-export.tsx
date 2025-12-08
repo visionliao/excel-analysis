@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  Database, AlertCircle, ArrowRight, CheckCircle2,
+  Database, AlertCircle, ArrowRight, CheckCircle2, CheckCircle,
   PlusCircle, RefreshCcw, AlertTriangle, Loader2, History, TableProperties, XCircle
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -53,6 +53,13 @@ interface ValidationErrorDetail {
   message: string
 }
 
+// 成功统计接口
+interface SuccessStats {
+  tables: number
+  rows: number
+  relationships: number
+}
+
 export function TableExportPanel() {
   const { toast } = useToast()
 
@@ -74,6 +81,10 @@ export function TableExportPanel() {
   // 错误弹窗状态
   const [validationError, setValidationError] = useState<ValidationErrorDetail | null>(null)
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
+
+  // 成功弹窗状态
+  const [successStats, setSuccessStats] = useState<SuccessStats | null>(null)
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
 
   // 1. 初始化
   useEffect(() => {
@@ -184,6 +195,7 @@ export function TableExportPanel() {
     // 每次导出前先关闭并清空之前的错误
     setIsErrorDialogOpen(false)
     setValidationError(null)
+    setIsSuccessDialogOpen(false)
 
     try {
       const res = await fetch('/api/db/export', {
@@ -197,11 +209,19 @@ export function TableExportPanel() {
       const result = await res.json()
 
       if (result.success) {
-        toast({
-            title: "导出成功",
-            description: "所有表结构及数据已根据沙盘定义同步至数据库",
-            className: "bg-green-100 border-green-200"
-        })
+        // 成功后，设置统计数据并打开成功弹窗
+        if (result.stats) {
+            setSuccessStats(result.stats);
+            setIsSuccessDialogOpen(true);
+        } else {
+            // 兼容
+            toast({
+              title: "导出成功",
+              description: "所有表结构及数据已根据沙盘定义同步至数据库",
+              className: "bg-green-100 border-green-200"
+          })
+        }
+        // 清空报告，防止重复提交
         setReport(null)
       } else {
         // 优先处理校验错误
@@ -323,6 +343,44 @@ export function TableExportPanel() {
           <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
             我已知晓，去处理
           </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* 成功结算弹窗 */}
+    <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          <div className="flex flex-col items-center gap-4 mb-4">
+              <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-10 w-10 text-green-600" />
+              </div>
+              <AlertDialogTitle className="text-2xl text-green-700">导出成功</AlertDialogTitle>
+          </div>
+          <AlertDialogDescription className="text-center">
+            所有数据已成功写入数据库，旧数据已覆盖。
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {successStats && (
+          <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+              <div className="flex justify-between items-center border-b pb-2">
+                  <span className="text-muted-foreground">处理表格</span>
+                  <span className="text-lg font-bold">{successStats.tables} 张</span>
+              </div>
+              <div className="flex justify-between items-center border-b pb-2">
+                  <span className="text-muted-foreground">写入数据</span>
+                  <span className="text-lg font-bold text-primary">{successStats.rows.toLocaleString()} 行</span>
+              </div>
+              <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">外键关系</span>
+                  <span className="font-medium">{successStats.relationships} 条</span>
+              </div>
+          </div>
+        )}
+
+        <AlertDialogFooter className="sm:justify-center mt-4">
+          <AlertDialogAction className="min-w-[120px] bg-green-600 hover:bg-green-700">完成</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

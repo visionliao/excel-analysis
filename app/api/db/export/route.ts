@@ -156,6 +156,10 @@ export async function POST(req: NextRequest) {
     await client.connect();
     await client.query('BEGIN');
 
+    // 统计数据
+    let totalTablesProcessed = 0;
+    let totalRowsInserted = 0;
+
     for (const table of tables) {
         const tableName = table.tableName;
         const columns = table.columns;
@@ -165,6 +169,9 @@ export async function POST(req: NextRequest) {
         await client.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
         const colDefs = columns.map((c: any) => `"${c.name}" ${c.type}`).join(',\n');
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
+
+        // 计数
+        totalTablesProcessed++;
 
         // 插入数据
         if (rows.length > 0) {
@@ -234,6 +241,8 @@ export async function POST(req: NextRequest) {
                 const insertSql = `INSERT INTO "${tableName}" (${keys}) VALUES ${placeholders.join(',')}`;
                 await client.query(insertSql, values);
             }
+            // 累加行数
+            totalRowsInserted += rows.length;
         }
     }
 
@@ -275,7 +284,14 @@ export async function POST(req: NextRequest) {
 
     await client.query('COMMIT');
     console.log(`✅ [DB Export] Successfully committed ${tables.length} tables.`);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+        success: true,
+        stats: {
+            tables: totalTablesProcessed,
+            rows: totalRowsInserted,
+            relationships: relationships?.length || 0
+        }
+    });
   } catch (error: any) {
     if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
     console.error('Database export error:', error);
