@@ -23,7 +23,6 @@ class DataSanitizer {
    */
   static tryRecover(value: any, sqlType: string): any {
     if (value === null || value === undefined || value === '') return null;
-
     const typeUpper = sqlType.toUpperCase();
     const strVal = String(value).trim();
 
@@ -64,7 +63,7 @@ class DataSanitizer {
     let d = new Date(cleanStr);
 
     // 2. 尝试解析非标准格式 YY/MM/DD
-    if (isNaN(d.getTime()) && cleanStr.includes('/') || cleanStr.includes('.')) {
+    if (isNaN(d.getTime()) && (cleanStr.includes('/') || cleanStr.includes('.'))) {
       const parts = cleanStr.split(/[\/\.]/);
       if (parts.length === 3) {
         let y = parseInt(parts[0]);
@@ -92,7 +91,7 @@ class DataSanitizer {
       return `${y}-${m}-${day} ${h}:${min}:${s}`;
     }
 
-    return rawStr; // 修复失败
+    return rawStr;
   }
 
   /**
@@ -177,6 +176,8 @@ export async function POST(req: NextRequest) {
 
     client = new Client({ connectionString: targetConnectionString, statement_timeout: 60000 });
     await client.connect();
+
+    // 使用事务保护
     await client.query('BEGIN');
 
     // 统计数据
@@ -185,7 +186,7 @@ export async function POST(req: NextRequest) {
 
     for (const table of tables) {
       const { tableName, columns, rows } = table;
-      let rowsToInsert = rows; // 默认插入所有
+      let rowsToInsert = rows;
 
       // 1. 判断操作模式
       let needCreateTable = false;
@@ -204,15 +205,14 @@ export async function POST(req: NextRequest) {
       } else {
         // 表存在且结构一致
         if (strategy === 'overwrite') {
-          // 全量模式：Drop 重建 (比 Truncate 更干净，能重置 Sequence)
           await client.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
           needCreateTable = true;
         } else {
-          // 增量模式：只插入 diff 出来的行
+          // 增量模式
           rowsToInsert = diff.toInsert;
           if (rowsToInsert.length === 0) {
-            console.log(`[Export] ${tableName}: No new data to insert.`);
-            continue; // 跳过此表
+            console.log(`[Export] ${tableName}: No new data.`);
+            continue;
           }
           console.log(`[Export] ${tableName}: Incrementally inserting ${rowsToInsert.length} rows.`);
         }
@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
       }
 
-      // 3. 执行插入 (针对 rowsToInsert)
+      // 3. 插入
       if (rowsToInsert.length > 0) {
         // 计数
         totalTablesProcessed++;
@@ -237,27 +237,19 @@ export async function POST(req: NextRequest) {
           const placeholders: string[] = [];
           let paramIndex = 1;
 
-          // 逐行处理
           for (let rowIndex = 0; rowIndex < batch.length; rowIndex++) {
             const row = batch[rowIndex];
             const rowPlaceholders: string[] = [];
 
-            // 逐行处理
             for (const col of columns) {
               let val = row[col.originalName];
 
-              // 1. 初次校验
               let errorMsg = validateValue(val, col.type);
               if (errorMsg) {
                 const originalVal = val;
-                // 尝试修复
                 val = DataSanitizer.tryRecover(val, col.type);
-                // 再次校验
                 errorMsg = validateValue(val, col.type);
-
-                // 如果依然失败，说明这数据真没救了 -> 抛出异常
                 if (errorMsg) {
-                  // 构造详细错误，包含整行数据
                   const errorDetail = {
                     tableName: tableName,
                     rowNumber: i + rowIndex + 1,
@@ -265,10 +257,8 @@ export async function POST(req: NextRequest) {
                     targetType: col.type,
                     invalidValue: String(originalVal),
                     message: errorMsg,
-                    // 打印整行数据，方便排查
                     rowData: row
                   };
-
                   console.error('\n================ EXPORT VALIDATION ERROR ================');
                   console.error(JSON.stringify(errorDetail, null, 2));
                   console.error('=========================================================\n');
@@ -282,15 +272,12 @@ export async function POST(req: NextRequest) {
                   }, { status: 400 });
                 }
               }
-
-              // 处理空值写入
               if (val === undefined || val === '') val = null;
               values.push(val);
               rowPlaceholders.push(`$${paramIndex++}`);
             }
             placeholders.push(`(${rowPlaceholders.join(',')})`);
           }
-
           const insertSql = `INSERT INTO "${tableName}" (${keys}) VALUES ${placeholders.join(',')}`;
           await client.query(insertSql, values);
         }
@@ -299,41 +286,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 提交数据事务 (确保数据安全落地)
+    await client.query('COMMIT');
+    console.log(`✅ [DB Export] Data transaction committed.`);
+
     // 建立外键关联
+    // 移出 Transaction，避免因为外键约束失败导致整个数据导入回滚
     if (relationships && relationships.length > 0) {
       console.log(`[DB Export] Processing ${relationships.length} foreign keys...`);
-
       for (const rel of relationships) {
         const constraintName = `fk_${rel.sourceTable}_${rel.sourceDbField}`;
         // 检查约束是否存在
-        const checkRes = await client.query(`SELECT 1 FROM pg_constraint WHERE conname = $1`, [constraintName]);
-        if (checkRes.rowCount === 0) {
-          // 构造 ALTER TABLE 语句
-          // 注意：这里假设 targetDbField 也是唯一的或者是主键。
-          // 如果 targetDbField 不是 id，Postgres 要求它必须有 UNIQUE 约束。
-          // 在沙盘模式下，如果用户连接了非 ID 字段，可能会在这里报错，这是预期的（提示用户设计错误）。
-          const sql = `
-            ALTER TABLE "${rel.sourceTable}"
-            ADD CONSTRAINT "${constraintName}"
-            FOREIGN KEY ("${rel.sourceDbField}")
-            REFERENCES "${rel.targetTable}" ("${rel.targetDbField}");
-          `;
-
-          try {
+        try {
+          const checkRes = await client.query(`SELECT 1 FROM pg_constraint WHERE conname = $1`, [constraintName]);
+          if (checkRes.rowCount === 0) {
+            const sql = `ALTER TABLE "${rel.sourceTable}" ADD CONSTRAINT "${constraintName}" FOREIGN KEY ("${rel.sourceDbField}") REFERENCES "${rel.targetTable}" ("${rel.targetDbField}");`;
             await client.query(sql);
-            console.log(`  Added FK: ${rel.sourceTable}.${rel.sourceDbField} -> ${rel.targetTable}.${rel.targetDbField}`);
-          } catch (fkError: any) {
-            // 外键建立失败（例如数据不一致，或者目标字段不是唯一索引）
-            // 我们可以选择报错回滚，或者仅打印警告继续。
-            // 为了保证数据能进去，这里建议先只打印警告，不回滚数据。
-            console.warn(`  [FK Warning] Failed to add foreign key ${constraintName}: ${fkError.message}`);
+            console.log(`  + Added FK: ${constraintName}`);
           }
+        } catch (fkError: any) {
+          // 这里是关键：Catch 住错误，打印警告，但程序继续执行
+          console.warn(`  [FK Warning] Failed to add foreign key ${constraintName}: ${fkError.message}`);
         }
       }
     }
 
-    await client.query('COMMIT');
-    console.log(`✅ [DB Export] Successfully committed ${tables.length} tables.`);
+    console.log(`✅ [DB Export] All done. Tables: ${totalTablesProcessed}, Rows: ${totalRowsInserted}`);
     return NextResponse.json({
       success: true,
       stats: {
@@ -344,6 +322,8 @@ export async function POST(req: NextRequest) {
       }
     });
   } catch (error: any) {
+    // 只有数据阶段的错误会触发回滚
+    // 外键阶段因为已经 COMMIT 了，不会触发这里的 ROLLBACK，符合预期
     if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
     console.error('Database export error:', error);
     return NextResponse.json({ success: false, errorType: 'DB_ERROR', error: error.message }, { status: 500 });
