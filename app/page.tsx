@@ -9,6 +9,7 @@ import { GroupedTableData, SavedSchemaItem } from "@/components/data-structure-d
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { TableSandbox } from "@/components/table-sandbox"
+import { DbOpsPanel } from "@/components/db-ops-panel"
 import { cn } from "@/lib/utils" // 引入 cn 工具函数
 
 export default function Home() {
@@ -119,6 +120,7 @@ export default function Home() {
           )}
           {activeMenu === "table-sandbox" && <TableSandbox />}
           {activeMenu === "table-export" && <TableExportPanel />}
+          {activeMenu === "db-ops" && <DbOpsPanel />}
           {activeMenu === "guide" && <GuidePanel />}
         </div>
       </main>
