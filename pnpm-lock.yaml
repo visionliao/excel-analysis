@@ -143,6 +143,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
+      pg-cursor:
+        specifier: ^2.15.3
+        version: 2.15.3(pg@8.16.3)
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -192,6 +195,9 @@ importers:
       '@types/pg':
         specifier: ^8.15.6
         version: 8.15.6
+      '@types/pg-cursor':
+        specifier: ^2.7.2
+        version: 2.7.2
       '@types/react':
         specifier: ^19
         version: 19.2.7
@@ -1252,6 +1258,9 @@ packages:
   '@types/node@22.19.1':
     resolution: {integrity: sha512-LCCV0HdSZZZb34qifBsyWlUmok6W7ouER+oQIGBScS8EsZsQbrtFTUrDX4hOl+CS6p7cnNC4td+qrSVGSCTUfQ==}
 
+  '@types/pg-cursor@2.7.2':
+    resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
+
   '@types/pg@8.15.6':
     resolution: {integrity: sha512-NoaMtzhxOrubeL/7UZuNTrejB4MPAJ0RpxZqXQf2qXuVlTPuG6Y8p4u9dKRaue4yjmC7ZhzVO2/Yyyn25znrPQ==}
 
@@ -1852,6 +1861,11 @@ packages:
 
   pg-connection-string@2.9.1:
     resolution: {integrity: sha512-nkc6NpDcvPVpZXxrreI/FOtX3XemeLl8E0qFr6F2Lrm/I8WOnaWNhIPK2Z7OHpw7gh5XJThi6j6ppgNoaT1w4w==}
+
+  pg-cursor@2.15.3:
+    resolution: {integrity: sha512-eHw63TsiGtFEfAd7tOTZ+TLy+i/2ePKS20H84qCQ+aQ60pve05Okon9tKMC+YN3j6XyeFoHnaim7Lt9WVafQsA==}
+    peerDependencies:
+      pg: ^8
 
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
@@ -3229,6 +3243,11 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/pg-cursor@2.7.2':
+    dependencies:
+      '@types/node': 22.19.1
+      '@types/pg': 8.15.6
+
   '@types/pg@8.15.6':
     dependencies:
       '@types/node': 22.19.1
@@ -3790,6 +3809,10 @@ snapshots:
     optional: true
 
   pg-connection-string@2.9.1: {}
+
+  pg-cursor@2.15.3(pg@8.16.3):
+    dependencies:
+      pg: 8.16.3
 
   pg-int8@1.0.1: {}
 

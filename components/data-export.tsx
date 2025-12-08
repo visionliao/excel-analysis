@@ -31,10 +31,11 @@ import {
 
 interface DiffReportItem {
   tableName: string
-  status: 'NEW_TABLE' | 'SCHEMA_CHANGE' | 'DATA_UPDATE'
+  status: 'NEW_TABLE' | 'SCHEMA_CHANGE' | 'DATA_UPDATE' | 'DATA_INCREMENTAL' | 'DATA_OVERWRITE' | 'NO_CHANGE'
   message: string
   newRowCount: number
   oldRowCount: number
+  insertCount: number
   diff?: string[]
 }
 
@@ -248,51 +249,82 @@ export function TableExportPanel() {
   }, [postgresUrl, selectedTimestamp, report, toast])
 
   const renderReportItem = (item: DiffReportItem) => {
-    let icon = <CheckCircle2 className="text-blue-500" />
-    let colorClass = "border-l-blue-500"
-    let badge = <Badge variant="secondary">数据更新</Badge>
+    let icon = <CheckCircle2 className="text-slate-400" />
+    let colorClass = "border-l-slate-300 bg-slate-50"
+    let badge = <Badge variant="outline" className="text-slate-500">无变化</Badge>
+    let showDetails = false;
 
-    if (item.status === 'NEW_TABLE') {
-      icon = <PlusCircle className="text-green-600" />
-      colorClass = "border-l-green-500"
-      badge = <Badge className="bg-green-600">新增表</Badge>
-    } else if (item.status === 'SCHEMA_CHANGE') {
-      icon = <AlertTriangle className="text-orange-500" />
-      colorClass = "border-l-orange-500"
-      badge = <Badge variant="destructive" className="bg-orange-500">结构变更</Badge>
+    // 根据优先级高亮显示
+    if (item.status === 'SCHEMA_CHANGE') {
+        icon = <AlertTriangle className="text-red-500 h-5 w-5" />
+        colorClass = "border-l-red-500 bg-red-50/50"
+        badge = <Badge variant="destructive">结构变更 (重置)</Badge>
+        showDetails = true;
+    } else if (item.status === 'NEW_TABLE') {
+        icon = <PlusCircle className="text-green-600 h-5 w-5" />
+        colorClass = "border-l-green-500 bg-green-50/50"
+        badge = <Badge className="bg-green-600">新增表</Badge>
+        showDetails = true;
+    } else if (item.status === 'DATA_INCREMENTAL' || item.status === 'DATA_OVERWRITE') {
+        icon = <RefreshCcw className="text-blue-500 h-5 w-5" />
+        colorClass = "border-l-blue-500 bg-blue-50/30"
+        badge = <Badge className="bg-blue-500">数据更新</Badge>
+        showDetails = true;
     }
 
     return (
-      <Card key={item.tableName} className={`mb-3 border-l-4 shadow-sm ${colorClass}`}>
+      <Card key={item.tableName} className={`mb-3 border-l-4 shadow-sm transition-all ${colorClass}`}>
         <CardHeader className="py-3 px-4 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
             {icon}
             <div>
-              <CardTitle className="text-base font-mono">{item.tableName}</CardTitle>
+              <CardTitle className={`text-base font-mono ${showDetails ? 'font-bold' : 'font-normal text-slate-600'}`}>
+                {item.tableName}
+              </CardTitle>
             </div>
             {badge}
           </div>
           <div className="flex items-center text-sm text-muted-foreground gap-4">
+            {/* 只有有变化时才着重显示行数变化 */}
+            {showDetails ? (
+            <div className="flex items-center gap-2">
             <div className="flex flex-col items-end">
-            <span className="text-xs">数据库原有</span>
-            <span className="font-bold">{item.oldRowCount} 行</span>
+            <span className="text-[10px] uppercase">Original</span>
+            <span className="font-mono">{item.oldRowCount}</span>
             </div>
-            <ArrowRight size={16} />
+            <ArrowRight size={14} />
             <div className="flex flex-col items-end">
-            <span className="text-xs">本次导入</span>
-            <span className="font-bold text-foreground">{item.newRowCount} 行</span>
+            <span className="text-[10px] uppercase">New</span>
+            <span className="font-mono font-bold text-foreground">{item.newRowCount}</span>
             </div>
+            {/* 显示增量 */}
+            {(item.insertCount > 0) && (
+            <Badge variant="outline" className="ml-2 bg-white text-green-600 border-green-200">
+              +{item.insertCount}
+            </Badge>
+            )}
+            </div>
+            ) : (
+            <span className="text-xs text-slate-400">行数: {item.newRowCount}</span>
+            )}
           </div>
         </CardHeader>
-        <Separator />
-        <CardContent className="py-3 px-4 bg-muted/20 text-sm">
-          <p className="mb-2 font-medium">{item.message}</p>
-          {item.diff && item.diff.length > 0 && (
-            <div className="bg-orange-50 p-2 rounded border border-orange-100 text-orange-800 text-xs font-mono">
-              {item.diff.map((d, i) => <div key={i}>• {d}</div>)}
-            </div>
-          )}
-        </CardContent>
+        {/* 只显示有意义的 Message */}
+        {showDetails && (
+          <>
+            <Separator className="bg-black/5" />
+            <CardContent className="py-2 px-4 text-xs text-muted-foreground">
+              {item.message}
+              {item.diff && (
+                <div className="mt-2 space-y-1">
+                  {item.diff.map((d, i) => (
+                    <div key={i} className="text-red-500 font-mono">• {d}</div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </>
+        )}
       </Card>
     )
   }

@@ -1,9 +1,17 @@
 // app/api/db/check/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from 'pg'
+import { Client, types } from 'pg'
 import { loadSchemaAndData } from '@/lib/schema-loader'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
+import { calculateIncrementalDiff } from '@/lib/db-diff'
+
+// =============================================================================
+// 配置 pg 驱动：读取日期、时间时保持字符串
+// =============================================================================
+types.setTypeParser(1082, (val) => val);
+types.setTypeParser(1114, (val) => val);
+types.setTypeParser(1184, (val) => val);
 
 export async function POST(req: NextRequest) {
   let client: Client | null = null;
@@ -11,6 +19,8 @@ export async function POST(req: NextRequest) {
     const { connectionString, timestamp } = await req.json();
     // 1. 优先使用前端传来的地址，如果为空，则读取服务端环境变量兜底
     const targetConnectionString = connectionString || process.env.POSTGRES_URL;
+    // 获取策略，默认为 incremental
+    const strategy = process.env.DB_UPDATE_STRATEGY || 'incremental';
 
     if (!targetConnectionString || !timestamp) {
       return NextResponse.json({ success: false, error: '缺少连接字符串或版本时间戳' }, { status: 400 });
@@ -36,74 +46,82 @@ export async function POST(req: NextRequest) {
     await client.connect();
 
     const report = [];
+    console.log(`[DB Check] Strategy: ${strategy}`);
 
     // 5. 执行对比逻辑
     for (const table of tables) {
-      const targetTableName = table.tableName;
-      const targetColumns = table.columns;
+      const { tableName, columns, rows } = table;
 
-      // 检查表是否存在
-      const checkTableRes = await client.query(
-        `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1);`,
-        [targetTableName]
-      );
-      const tableExists = checkTableRes.rows[0].exists;
+      // 使用通用 Diff 逻辑
+      const diffResult = await calculateIncrementalDiff(client, tableName, columns, rows);
+      const { isNewTable, isSchemaChanged, toInsert, dbCount } = diffResult;
 
-      if (!tableExists) {
+      // 根据策略生成报告文案
+      if (isNewTable) {
         report.push({
-          tableName: targetTableName,
+          tableName,
           status: 'NEW_TABLE',
-          message: '数据库中不存在此表，将新建表。',
-          newRowCount: table.totalRows,
+          message: '数据库不存在此表，将新建。',
+          newRowCount: rows.length,
           oldRowCount: 0,
-          details: targetColumns.map(c => `${c.name} (${c.type})`)
+          insertCount: rows.length,
+          priority: 1 // 排序优先级
+        });
+      } else if (isSchemaChanged) {
+        report.push({
+          tableName,
+          status: 'SCHEMA_CHANGE',
+          message: '表结构变更，将 DROP 并重建（全量覆盖）。',
+          newRowCount: rows.length,
+          oldRowCount: dbCount,
+          insertCount: rows.length,
+          priority: 0 // 最高优先级，红色警告
         });
       } else {
-        // 检查结构变更 (列名是否存在)
-        const checkColsRes = await client.query(
-          `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1;`,
-          [targetTableName]
-        );
-        const dbColumnNames = checkColsRes.rows.map((r: any) => r.column_name);
-        const changes: string[] = [];
-
-        targetColumns.forEach(col => {
-          if (!dbColumnNames.includes(col.name)) changes.push(`新增列: ${col.name}`);
-        });
-        const targetColNames = targetColumns.map(c => c.name);
-        dbColumnNames.forEach((dbColName: string) => {
-            if (dbColName !== 'id' && !targetColNames.includes(dbColName)) {
-                changes.push(`删除列: ${dbColName}`);
-            }
-        });
-
-        const countRes = await client.query(`SELECT COUNT(*) FROM "${targetTableName}"`);
-        const dbRowCount = parseInt(countRes.rows[0].count, 10);
-
-        if (changes.length > 0) {
+        // 结构一致
+        if (strategy === 'overwrite') {
+           // 全量模式
+           const diff = rows.length - dbCount;
            report.push({
-              tableName: targetTableName,
-              status: 'SCHEMA_CHANGE',
-              message: '表结构变更，将重建表。',
-              newRowCount: table.totalRows,
-              oldRowCount: dbRowCount,
-              diff: changes
+              tableName,
+              status: 'DATA_OVERWRITE',
+              message: `[全量模式] 将清空旧数据并插入新数据。`,
+              newRowCount: rows.length,
+              oldRowCount: dbCount,
+              insertCount: rows.length,
+              priority: diff !== 0 ? 2 : 10 // 如果行数不同，稍微提前
            });
         } else {
-           const diff = table.totalRows - dbRowCount;
-           // 如果行数一样，且没有结构变化，理论上不需要操作，但为了保证数据一致性，通常还是全量覆盖
-           // 这里仅作提示
-           report.push({
-              tableName: targetTableName,
-              status: 'DATA_UPDATE',
-              message: `结构一致。数据库现有 ${dbRowCount} 行，本次将写入 ${table.totalRows} 行。`,
-              newRowCount: table.totalRows,
-              oldRowCount: dbRowCount
-           });
+          // 增量模式
+          const insertCount = toInsert.length;
+          if (insertCount > 0) {
+            report.push({
+              tableName,
+              status: 'DATA_INCREMENTAL',
+              message: `[增量模式] 检测到 ${insertCount} 条新数据，将执行插入。`,
+              newRowCount: dbCount + insertCount,
+              oldRowCount: dbCount,
+              insertCount: insertCount,
+              priority: 2 // 有新增，排前面
+            });
+          } else {
+            report.push({
+              tableName,
+              status: 'NO_CHANGE',
+              message: `[增量模式] 数据完全一致，无需操作。`,
+              newRowCount: dbCount,
+              oldRowCount: dbCount,
+              insertCount: 0,
+              priority: 99 // 沉底
+            });
+          }
         }
       }
     }
-    return NextResponse.json({ success: true, report });
+    // 排序：结构变更 > 新表 > 有数据更新 > 无变化
+    report.sort((a, b) => a.priority - b.priority);
+
+    return NextResponse.json({ success: true, report, strategy });
   } catch (error: any) {
     console.error('Database check error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
