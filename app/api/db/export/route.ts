@@ -243,6 +243,20 @@ export async function POST(req: NextRequest) {
       if (needCreateTable) {
         const colDefs = columns.map((c: any) => `"${c.name}" ${c.type}`).join(',\n');
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
+        // 1. 表注释
+        if (table.originalName) {
+          // 使用参数化查询防止 SQL 注入
+          const safeComment = table.originalName.replace(/'/g, "''"); // 转义单引号
+          await client.query(`COMMENT ON TABLE "${tableName}" IS '${safeComment}'`);
+        }
+
+        // 2. 字段注释
+        for (const col of columns) {
+          if (col.comment) {
+            const safeComment = col.comment.replace(/'/g, "''"); // 转义单引号
+            await client.query(`COMMENT ON COLUMN "${tableName}"."${col.name}" IS '${safeComment}'`);
+          }
+        }
         rowsToInsert = rows; // 新表全量插入
       }
 

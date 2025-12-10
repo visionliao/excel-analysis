@@ -17,6 +17,7 @@ export interface TableExportContext {
     name: string      // dbField
     type: string      // SQL type
     originalName: string // Excel header
+    comment?: string
   }[]
   rows: any[]
   totalRows: number
@@ -108,7 +109,8 @@ export async function loadSchemaAndData(timestamp: string): Promise<{
       .map((col: any) => ({
         name: col.dbField,
         type: PG_TYPES[col.dataType] || 'VARCHAR(255)',
-        originalName: col.original
+        originalName: col.original,
+        comment: col.comment || col.original
       }));
 
     if (activeColumns.length === 0) continue;
