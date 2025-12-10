@@ -249,9 +249,9 @@ export abstract class BaseFileParser {
     const hours = pad(date.getHours());
     const minutes = pad(date.getMinutes());
     const seconds = pad(date.getSeconds());
-    if (hours === '00' && minutes === '00' && seconds === '00') {
-      return `${year}-${month}-${day}`;
-    }
+    // if (hours === '00' && minutes === '00' && seconds === '00') {
+    //   return `${year}-${month}-${day}`;
+    // }
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 }

@@ -116,6 +116,23 @@ class DataSanitizer {
   }
 }
 
+// 强制将 Date 对象转换为本地时间字符串
+function forceDateToString(d: Date, type: string): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+
+    // 如果是 DATE 类型，只返回 YYYY-MM-DD
+    if (type.toUpperCase().includes('DATE')) {
+        return `${y}-${m}-${day}`;
+    }
+    // TIMESTAMP 返回 YYYY-MM-DD HH:mm:ss (本地时间)
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const s = String(d.getSeconds()).padStart(2, '0');
+    return `${y}-${m}-${day} ${h}:${min}:${s}`;
+}
+
 // 2. 基础校验逻辑
 function validateValue(value: any, sqlType: string): string | null {
   if (value === null || value === undefined || value === '') return null;
@@ -243,6 +260,12 @@ export async function POST(req: NextRequest) {
 
             for (const col of columns) {
               let val = row[col.originalName];
+
+              const typeUp = col.type.toUpperCase();
+              // 情况A: val 是标准的 JS Date 对象 (parseExcelBuffer 产生)
+              if (val instanceof Date) {
+                val = forceDateToString(val, col.type);
+              }
 
               let errorMsg = validateValue(val, col.type);
               if (errorMsg) {

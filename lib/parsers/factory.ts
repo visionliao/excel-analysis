@@ -21,6 +21,7 @@ import { DepositBalanceRealtimeParser } from './implementations/deposit-balance-
 import { APGAssetDataParser } from './implementations/apg-asset-data-parser';
 import { ArAgingResidentParser } from './implementations/ar-aging-resident-parser';
 import { PostingDetailFeeCodeParser } from './implementations/posting-detail-fee-code-parser';
+import { PostingDetailTaxSepParser } from './implementations/posting-detail-tax-sep-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -49,6 +50,7 @@ export class ParserFactory {
     'apg_asset_data': new APGAssetDataParser(),
     'ar_aging_resident': new ArAgingResidentParser(),
     'posting_detail_fee_code': new PostingDetailFeeCodeParser(),
+    'posting_detail_tax_sep': new PostingDetailTaxSepParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),

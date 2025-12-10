@@ -32,41 +32,48 @@ function normalizeValue(val: any, type: string): string {
 
   // B. 日期/时间类型 (全部改成字符串存取)
   if (typeUp.includes('DATE') || typeUp.includes('TIME')) {
-    let cleanVal = val;
-    let d: Date;
+    // 1. 如果已经是 Date 对象 (防御性处理)
+    if (val instanceof Date) {
+      if (isNaN(val.getTime())) return '';
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, '0');
+      const d = String(val.getDate()).padStart(2, '0');
 
-    // 1. 处理截断 (24/10/31 05:)
-    // 如果是字符串且包含空格，尝试只取第一部分
-    if (typeof cleanVal === 'string' && cleanVal.includes(' ')) {
-      const parts = cleanVal.split(' ');
-      // 如果第一部分看起来像日期 (包含 / - .)，就取第一部分
-      if (parts[0].includes('/') || parts[0].includes('-') || parts[0].includes('.')) {
-        cleanVal = parts[0];
+      if (typeUp.includes('DATE') && !typeUp.includes('TIME')) {
+        return `${y}-${m}-${d}`;
       }
+      const h = String(val.getHours()).padStart(2, '0');
+      const min = String(val.getMinutes()).padStart(2, '0');
+      const s = String(val.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${d} ${h}:${min}:${s}`;
     }
 
-    // 2. 尝试标准解析
-    if (cleanVal instanceof Date) {
-      d = cleanVal;
-    } else {
-      d = new Date(cleanVal);
+    let strVal = String(val).trim();
+    let d = new Date(strVal);
+
+    // 2. 处理截断 (24/10/31 05:)
+    // 如果是字符串且包含空格，尝试只取第一部分
+    if (strVal.includes(' ') && isNaN(d.getTime())) {
+      const parts = strVal.split(' ');
+      // 如果第一部分看起来像日期 (包含 / - .)，就取第一部分
+      if (parts[0].includes('/') || parts[0].includes('-') || parts[0].includes('.')) {
+        d = new Date(parts[0]);
+      }
     }
 
     // 3. 如果解析失败，尝试手动解析非标准格式 YY/MM/DD
-    if (isNaN(d.getTime()) && typeof cleanVal === 'string') {
-      if (cleanVal.includes('/') || cleanVal.includes('.')) {
-        const parts = cleanVal.split(/[\/\.]/); 
+    if (isNaN(d.getTime()) && (strVal.includes('/') || strVal.includes('.'))) {
+        const parts = strVal.split(/[\/\.]/);
         if (parts.length === 3) {
-          let y = parseInt(parts[0]);
-          const m = parseInt(parts[1]);
-          const day = parseInt(parts[2]);
-          // 修正 2位年份
-          if (y < 100) y += (y > 50 ? 1900 : 2000);
+            let y = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            const day = parseInt(parts[2]);
+            // 修正 2位年份
+            if (y < 100) y += (y > 50 ? 1900 : 2000);
 
-          const isoStr = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          d = new Date(isoStr);
+            const isoStr = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            d = new Date(isoStr);
         }
-      }
     }
 
     // 4. 格式化输出 (用于生成签名)
@@ -76,7 +83,7 @@ function normalizeValue(val: any, type: string): string {
       const day = String(d.getDate()).padStart(2, '0');
 
       // 如果是 DATE 类型，只取 YYYY-MM-DD
-      if (typeUp === 'DATE') {
+      if (typeUp.includes('DATE') && !typeUp.includes('TIME')) {
         return `${y}-${m}-${day}`;
       }
 
@@ -89,10 +96,7 @@ function normalizeValue(val: any, type: string): string {
       return `${y}-${m}-${day} ${h}:${min}:${s}`;
     }
 
-    // 如果是数据库读出来的 ISO 字符串，或者是无法修复的字符串
-    const strVal = String(val).trim();
-    // 简单清洗 T 和 Z (DB读出来的样子)
-    return strVal.replace('T', ' ').replace('Z', '').split('.')[0];
+    return strVal;
   }
 
   // C. 布尔值
@@ -197,6 +201,7 @@ export async function calculateIncrementalDiff(
 
   // 4. 内存筛选
   const toInsert: any[] = [];
+  let debugLogCount = 0;
   incomingRows.forEach((row, idx) => {
     const { signature, parts } = generateSignatureParts(row, targetColumns);
 
@@ -207,6 +212,13 @@ export async function calculateIncrementalDiff(
 
     if (!dbSignatureSet.has(signature)) {
       toInsert.push(row);
+      if (debugLogCount < 5) {
+        console.log(`\n[Diff Debug] Found Mismatch Row (Index: ${idx}):`);
+        console.log(`  -> Excel Raw:`, JSON.stringify(row));
+        console.log(`  -> Signature:`, signature);
+        console.log(`  -> Reason: This signature does NOT exist in the DB.`);
+        debugLogCount++;
+      }
     }
   });
 
