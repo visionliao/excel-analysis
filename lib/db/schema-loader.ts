@@ -1,3 +1,4 @@
+// lib/db/schema-loader.ts
 import { join, basename } from 'path'
 import { readFile, readdir } from 'fs/promises'
 import { existsSync } from 'fs'

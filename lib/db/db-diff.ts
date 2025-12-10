@@ -1,4 +1,4 @@
-// lib/db-diff.ts
+// lib/db/db-diff.ts
 import { Client, types } from 'pg';
 import Cursor from 'pg-cursor';
 

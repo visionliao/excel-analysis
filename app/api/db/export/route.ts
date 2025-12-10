@@ -4,7 +4,7 @@ import { Client, types } from 'pg'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
-import { calculateIncrementalDiff } from '@/lib/db-diff'
+import { calculateIncrementalDiff } from '@/lib/db/db-diff'
 
 // =============================================================================
 // 配置 pg 驱动：读取日期、时间时保持字符串

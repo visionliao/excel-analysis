@@ -1,10 +1,10 @@
 // app/api/db/check/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { Client, types } from 'pg'
-import { loadSchemaAndData } from '@/lib/schema-loader'
+import { loadSchemaAndData } from '@/lib/db/schema-loader'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { calculateIncrementalDiff } from '@/lib/db-diff'
+import { calculateIncrementalDiff } from '@/lib/db/db-diff'
 
 // =============================================================================
 // 配置 pg 驱动：读取日期、时间时保持字符串

@@ -1,6 +1,7 @@
+// app/api/db/ops/list/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { Client, types } from 'pg'
-import { loadSchemaAndData } from '@/lib/schema-loader'
+import { loadSchemaAndData } from '@/lib/db/schema-loader'
 
 // 强制日期转字符串，保证与导出逻辑一致
 types.setTypeParser(1082, (val) => val);

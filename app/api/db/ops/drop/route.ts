@@ -1,3 +1,4 @@
+// app/api/db/ops/drop/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from 'pg'
 
