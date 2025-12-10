@@ -20,13 +20,19 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
+export interface TableColumnInfo {
+  name: string
+  comment: string | null
+}
+
 export interface TableData {
   tableName: string
+  tableComment?: string
   originalName?: string
   exists: boolean
   rows: any[]
   totalInDB: number
-  columns: string[]
+  columns: TableColumnInfo[]
   isExpanded?: boolean
   isLoadingMore?: boolean
 }
@@ -334,9 +340,9 @@ export function DbOpsPanel({ postgresUrl, setPostgresUrl, state, setState }: DbO
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-lg font-bold font-mono text-primary">{table.tableName}</h3>
-                                    {table.originalName && (
+                                    {table.tableComment && (
                                       <span className="text-sm text-muted-foreground font-normal">
-                                        ({table.originalName})
+                                        ({table.tableComment})
                                       </span>
                                     )}
                                     {!table.exists && <Badge variant="secondary">未在数据库中找到</Badge>}
@@ -371,20 +377,28 @@ export function DbOpsPanel({ postgresUrl, setPostgresUrl, state, setState }: DbO
                                         <table className="w-full text-sm text-left">
                                             <thead className="bg-muted text-muted-foreground font-medium sticky top-0 z-10">
                                                 <tr>
-                                                    {/* ID 列优先 */}
-                                                    <th className="px-4 py-2 border-b w-[80px] bg-muted">id</th>
-                                                    {table.columns.filter(c => c !== 'id').map((col) => (
-                                                        <th key={col} className="px-4 py-2 border-b whitespace-nowrap bg-muted">{col}</th>
+                                                    {table.columns.map((col) => (
+                                                        <th key={col.name} className={`px-4 py-2 border-b whitespace-nowrap bg-muted ${col.name === 'id' ? 'w-[80px]' : ''}`}>
+                                                            <div className="flex flex-col">
+                                                                <span className={col.name === 'id' ? 'font-mono' : ''}>
+                                                                    {col.name}
+                                                                </span>
+                                                                {col.comment && (
+                                                                    <span className="text-[10px] font-normal text-slate-500">
+                                                                        ({col.comment})
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </th>
                                                     ))}
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {table.rows.map((row, rIdx) => (
-                                                    <tr key={rIdx} className="hover:bg-muted/50 border-b last:border-0">
-                                                        <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{row.id}</td>
-                                                        {table.columns.filter(c => c !== 'id').map((col, cIdx) => (
-                                                            <td key={cIdx} className="px-4 py-2 whitespace-nowrap max-w-[300px] truncate">
-                                                                {String(row[col] ?? '')}
+                                                {table.rows.map((row) => (
+                                                    <tr key={row.id} className="hover:bg-muted/50 border-b last:border-0">
+                                                        {table.columns.map((col) => (
+                                                            <td key={col.name} className={`px-4 py-2 whitespace-nowrap max-w-[300px] truncate ${col.name === 'id' ? 'font-mono text-xs text-muted-foreground' : ''}`}>
+                                                                {String(row[col.name] ?? '')}
                                                             </td>
                                                         ))}
                                                     </tr>

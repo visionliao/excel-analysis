@@ -40,33 +40,65 @@ export async function POST(req: NextRequest) {
       if (!checkRes.rows[0].exists) {
         result.push({
           tableName,
+          tableComment: null,
           originalName: schemaTable.originalName,
           exists: false,
           rows: [],
           totalInDB: 0,
-          columns: schemaTable.columns.map(c => c.name) // 依然返回预期的列名
+          columns: schemaTable.columns.map(c => ({
+             name: c.name,
+             comment: null // 还没建表，暂无 DB 备注
+          }))
         });
         continue;
       }
 
-      // 3. 获取列名 (以数据库实际为准，防止 schema 不一致报错)
-      // 但为了展示友好，我们尽量结合 schema 的定义
+      // 3. 获取数据库中的表备注
+      const tblCommentRes = await client.query(
+        `SELECT obj_description($1::regclass, 'pg_class') as comment`,
+        [tableName]
+      );
+      const tableComment = tblCommentRes.rows[0]?.comment || null;
 
-      // 4. 查询前 50 条数据
+      // 4. 获取数据库中的列备注
+      // 使用 information_schema 结合 col_description 函数
+      const colCommentRes = await client.query(`
+        SELECT
+            column_name,
+            pg_catalog.col_description(format('%s.%s', table_schema, table_name)::regclass::oid, ordinal_position) as comment
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = $1
+        ORDER BY ordinal_position
+      `, [tableName]);
+
+      // 转成 Map 方便查找
+      const colCommentMap = new Map<string, string>();
+      colCommentRes.rows.forEach((row: any) => {
+          if (row.comment) colCommentMap.set(row.column_name, row.comment);
+      });
+
+      // 5. 查询前 50 条数据
       // 我们显式查询 id + 业务字段
       const dataRes = await client.query(`SELECT * FROM "${tableName}" LIMIT 50`);
       
-      // 5. 获取总行数 (用于判断是否显示"加载更多")
+      // 6. 获取总行数 (用于判断是否显示"加载更多")
       const countRes = await client.query(`SELECT COUNT(*) FROM "${tableName}"`);
       const totalInDB = parseInt(countRes.rows[0].count, 10);
 
+      // 7. 组装列信息 (包含 DB 中的备注)
+      const columnsWithComment = dataRes.fields.map(f => ({
+          name: f.name,
+          comment: colCommentMap.get(f.name) || null
+      }));
+
       result.push({
         tableName,
+        tableComment,
         originalName: schemaTable.originalName,
         exists: true,
         rows: dataRes.rows,
         totalInDB,
-        columns: dataRes.fields.map(f => f.name) // 使用 DB 实际列名
+        columns: columnsWithComment // 包含备注的列对象数组
       });
     }
 
