@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useCallback, useRef } from "react"
-import { FolderOpen, FileText, Upload, X, Loader2 } from "lucide-react"
+import { FolderOpen, FileText, Upload, X, Loader2, Table2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -276,7 +276,10 @@ export function FileUploadArea({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">文件列表</h2>
+          <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+            <Table2 className="text-primary" />
+            表格处理
+          </h2>
           <p className="text-muted-foreground mt-1">选择文件或文件夹进行处理</p>
         </div>
         <Button variant="outline" onClick={handleFileSelect} className="gap-2 bg-transparent">

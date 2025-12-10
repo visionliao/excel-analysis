@@ -18,7 +18,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import { Save, Loader2, LayoutGrid, AlertTriangle } from 'lucide-react'
+import { Save, Loader2, LayoutGrid, AlertTriangle, Grid3X3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -384,7 +384,10 @@ export function TableSandbox() {
       {/* 顶部 Header */}
       <div className="h-20 border-b bg-white px-6 flex items-center justify-between shadow-sm z-10 shrink-0">
         <div className="space-y-1">
-          <h2 className="text-xl font-bold text-slate-800">表格沙盘</h2>
+          <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+            <Grid3X3 className="text-primary" />
+            表格沙盘
+          </h2>
           <p className="text-xs text-muted-foreground">
             编辑表格字段、类型、备注，并建立表格字段之间的外键关联 (Drag & Connect)
           </p>

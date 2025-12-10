@@ -1,10 +1,15 @@
 "use client"
 
+import { BookOpen } from "lucide-react"
+
 export function GuidePanel() {
   return (
     <div className="w-full max-w-none xl:max-w-7xl 2xl:max-w-[90rem] mx-auto">
       <div className="mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-foreground">使用说明</h2>
+        <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+          <BookOpen className="text-primary" />
+          使用说明
+        </h2>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">了解如何使用本工具</p>
       </div>
 
