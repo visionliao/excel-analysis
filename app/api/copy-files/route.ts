@@ -26,6 +26,19 @@ function getLocalTimestamp() {
 export async function POST(request: NextRequest) {
   try {
     const { files } = await request.json()
+    files.sort((a: any, b: any) => {
+      // 优先比较路径（如果有），再比较文件名
+      const nameA = a.relativePath || a.name;
+      const nameB = b.relativePath || b.name;
+      return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    console.log('\n=== [CopyFiles] Sorted File List ===');
+    files.forEach((f: any, i: number) => {
+        console.log(`${i + 1}. ${f.relativePath || f.name}`);
+    });
+    console.log('====================================\n');
+
     const timestamp = getLocalTimestamp();
     const outputDir = join(process.cwd(), 'output', 'source', timestamp)
     await mkdir(outputDir, { recursive: true })

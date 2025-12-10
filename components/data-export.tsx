@@ -37,6 +37,10 @@ interface DiffReportItem {
   oldRowCount: number
   insertCount: number
   diff?: string[]
+  detailIds?: {
+    updates: number[]
+    inserts: number[]
+  }
 }
 
 interface SchemaTablePreview {
@@ -248,6 +252,27 @@ export function TableExportPanel() {
     }
   }, [postgresUrl, selectedTimestamp, report, toast])
 
+  // 格式化 ID 列表显示
+  const renderIdList = (ids: number[], type: 'insert' | 'update') => {
+    if (!ids || ids.length === 0) return null;
+
+    // 如果数量太多，截断显示
+    const MAX_DISPLAY = 15;
+    const displayIds = ids.slice(0, MAX_DISPLAY).join(', ');
+    const moreCount = ids.length - MAX_DISPLAY;
+
+    const label = type === 'insert' ? '新增' : '更新';
+    const colorClass = type === 'insert' ? 'text-green-600' : 'text-blue-600';
+    const bgColorClass = type === 'insert' ? 'bg-green-50' : 'bg-blue-50';
+
+    return (
+        <div className={`text-xs mt-1 font-mono ${colorClass} ${bgColorClass} p-2 rounded break-all`}>
+            <span className="font-bold">[{label} {ids.length} 条]:</span> ID 为 {displayIds}
+            {moreCount > 0 && <span className="opacity-70"> ... 等 {moreCount} 条</span>}
+        </div>
+    );
+  };
+
   const renderReportItem = (item: DiffReportItem) => {
     let icon = <CheckCircle2 className="text-slate-400" />
     let colorClass = "border-l-slate-300 bg-slate-50"
@@ -256,20 +281,20 @@ export function TableExportPanel() {
 
     // 根据优先级高亮显示
     if (item.status === 'SCHEMA_CHANGE') {
-        icon = <AlertTriangle className="text-red-500 h-5 w-5" />
-        colorClass = "border-l-red-500 bg-red-50/50"
-        badge = <Badge variant="destructive">结构变更 (重置)</Badge>
-        showDetails = true;
+      icon = <AlertTriangle className="text-red-500 h-5 w-5" />
+      colorClass = "border-l-red-500 bg-red-50/50"
+      badge = <Badge variant="destructive">结构变更 (重置)</Badge>
+      showDetails = true;
     } else if (item.status === 'NEW_TABLE') {
-        icon = <PlusCircle className="text-green-600 h-5 w-5" />
-        colorClass = "border-l-green-500 bg-green-50/50"
-        badge = <Badge className="bg-green-600">新增表</Badge>
-        showDetails = true;
+      icon = <PlusCircle className="text-green-600 h-5 w-5" />
+      colorClass = "border-l-green-500 bg-green-50/50"
+      badge = <Badge className="bg-green-600">新增表</Badge>
+      showDetails = true;
     } else if (item.status === 'DATA_INCREMENTAL' || item.status === 'DATA_OVERWRITE') {
-        icon = <RefreshCcw className="text-blue-500 h-5 w-5" />
-        colorClass = "border-l-blue-500 bg-blue-50/30"
-        badge = <Badge className="bg-blue-500">数据更新</Badge>
-        showDetails = true;
+      icon = <RefreshCcw className="text-blue-500 h-5 w-5" />
+      colorClass = "border-l-blue-500 bg-blue-50/30"
+      badge = <Badge className="bg-blue-500">数据更新</Badge>
+      showDetails = true;
     }
 
     return (
@@ -313,8 +338,17 @@ export function TableExportPanel() {
         {showDetails && (
           <>
             <Separator className="bg-black/5" />
-            <CardContent className="py-2 px-4 text-xs text-muted-foreground">
-              {item.message}
+            <CardContent className="py-2 px-4 text-xs text-muted-foreground space-y-2">
+              {/* 优先显示详细 ID 列表 */}
+              {item.status === 'DATA_INCREMENTAL' && item.detailIds ? (
+                <>
+                  {renderIdList(item.detailIds.inserts, 'insert')}
+                  {renderIdList(item.detailIds.updates, 'update')}
+                </>
+              ) : (
+                // 降级显示普通消息 (New Table, Schema Change)
+                <div>{item.message}</div>
+              )}
               {item.diff && (
                 <div className="mt-2 space-y-1">
                   {item.diff.map((d, i) => (

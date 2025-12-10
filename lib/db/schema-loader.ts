@@ -49,8 +49,8 @@ export async function loadSchemaAndData(timestamp: string): Promise<{
   const schemaContent = await readFile(schemaPath, 'utf-8');
   const schemaJson = JSON.parse(schemaContent);
   const nodes = schemaJson.nodes || [];
-
   const relationships: SchemaRelationship[] = schemaJson.relationships || [];
+
   // 2. 读取并解析源文件 (严格复用 parseExcelBuffer)
   const groupedRawData: Record<string, any[]> = {}; 
 
@@ -68,13 +68,22 @@ export async function loadSchemaAndData(timestamp: string): Promise<{
   const validFiles = allFiles.filter(f => {
     const name = basename(f);
     return name.match(/\.(xlsx|xls|csv)$/i) && !name.startsWith('~$') && !name.startsWith('.');
+  }).sort((a, b) => {
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
   });
+
+  console.log(`\n=== [SchemaLoader] Sorted Valid Files in ${timestamp} ===`);
+  validFiles.forEach((f, i) => {
+      // 打印完整路径或相对路径，方便确认顺序
+      console.log(`${i + 1}. ${basename(f)}`);
+  });
+  console.log('=========================================================\n');
 
   for (const filePath of validFiles) {
     const buffer = await readFile(filePath);
     const fileName = basename(filePath);
 
-    // 这里调用的 parseExcelBuffer 和第一步上传时是同一个函数
+    // 复用 parseExcelBuffer 解析函数
     const { rows } = await parseExcelBuffer(buffer, fileName);
 
     const baseName = getBaseTableName(fileName);

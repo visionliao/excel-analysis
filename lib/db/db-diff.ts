@@ -130,9 +130,9 @@ function generateSignatureParts(row: any, columns: any[]): { signature: string, 
 // 2. 数据比对逻辑
 // ----------------------------------------------------------------------------
 export async function calculateIncrementalDiff(
-  client: Client, 
-  tableName: string, 
-  targetColumns: any[], 
+  client: Client,
+  tableName: string,
+  targetColumns: any[],
   incomingRows: any[]
 ) {
   // 1. 检查表是否存在
@@ -141,7 +141,7 @@ export async function calculateIncrementalDiff(
     [tableName]
   );
   if (!checkTableRes.rows[0].exists) {
-    return { toInsert: incomingRows, isSchemaChanged: false, isNewTable: true, dbCount: 0 };
+    return { toInsert: incomingRows, toUpdate: [], isSchemaChanged: false, isNewTable: true, dbCount: 0 };
   }
 
   // 2. 检查表结构
@@ -150,31 +150,31 @@ export async function calculateIncrementalDiff(
     [tableName]
   );
   const dbColumnNames = checkColsRes.rows.map((r: any) => r.column_name);
-
   const hasSchemaChange = targetColumns.some(col => !dbColumnNames.includes(col.name));
 
   if (hasSchemaChange) {
     const countRes = await client.query(`SELECT COUNT(*) FROM "${tableName}"`);
-    return { 
-      toInsert: incomingRows, 
-      isSchemaChanged: true, 
-      isNewTable: false, 
-      dbCount: parseInt(countRes.rows[0].count, 10) 
+    return {
+      toInsert: incomingRows,
+      toUpdate: [],
+      isSchemaChanged: true,
+      isNewTable: false,
+      dbCount: parseInt(countRes.rows[0].count, 10)
     };
   }
 
-  // 3. 流式比对
+  // 3. 有序读取数据库 (按 ID ASC)
   const colNamesSql = targetColumns.map(c => `"${c.name}"`).join(', ');
-  const queryStr = `SELECT ${colNamesSql} FROM "${tableName}"`; // 不查 ID，只查业务字段
+  const queryStr = `SELECT id, ${colNamesSql} FROM "${tableName}" ORDER BY id ASC`;
 
   const cursor = client.query(new Cursor(queryStr));
-  const dbSignatureSet = new Set<string>();
-  let dbCount = 0;
+  const toUpdate: any[] = []; // { id, data }
+  let dbRowIndex = 0;
+  const BATCH_SIZE = 10000;
 
   // --- Debug 容器 ---
   const dbDebugSamples: any[] = [];
   const incomingDebugSamples: any[] = [];
-  const BATCH_SIZE = 10000;
 
   await new Promise<void>((resolve, reject) => {
     const readNext = () => {
@@ -182,67 +182,73 @@ export async function calculateIncrementalDiff(
         if (err) return reject(err);
         if (rows.length === 0) return resolve();
 
-        dbCount += rows.length;
-        rows.forEach((row, idx) => {
-          const { signature, parts } = generateSignatureParts(row, targetColumns);
-          dbSignatureSet.add(signature);
+        for (const row of rows) {
+          const excelRow = incomingRows[dbRowIndex];
 
-          // 采样前 3 行用于调试
-          if (dbDebugSamples.length < 3) {
-            dbDebugSamples.push({ raw: row, normalized: parts, sig: signature });
+          // 采样调试第一行
+          if (dbRowIndex === 0) {
+            const { parts: p1, signature: s1 } = generateSignatureParts(row, targetColumns);
+            dbDebugSamples.push({ raw: row, normalized: p1, sig: s1 });
+            if (excelRow) {
+              const { parts: p2, signature: s2 } = generateSignatureParts(excelRow, targetColumns);
+              incomingDebugSamples.push({ raw: excelRow, normalized: p2, sig: s2 });
+            }
           }
-        });
 
+          if (!excelRow) {
+            // Excel 行数比 DB 少，忽略多余的 DB 行
+            dbRowIndex++;
+            continue;
+          }
+
+          // 对比指纹
+          const { signature: dbSig } = generateSignatureParts(row, targetColumns);
+          const { signature: excelSig } = generateSignatureParts(excelRow, targetColumns);
+
+          if (dbSig !== excelSig) {
+            // 不一致 -> 记录 Update，使用 DB 的 ID
+            toUpdate.push({
+              id: row.id,
+              data: excelRow
+            });
+          }
+          dbRowIndex++;
+        }
         readNext();
       });
     };
     readNext();
   });
 
-  // 4. 内存筛选
+  // 4. 处理新增 (Insert)
   const toInsert: any[] = [];
-  let debugLogCount = 0;
-  incomingRows.forEach((row, idx) => {
-    const { signature, parts } = generateSignatureParts(row, targetColumns);
-
-    // 采样前 3 行用于调试
-    if (incomingDebugSamples.length < 3) {
-      incomingDebugSamples.push({ raw: row, normalized: parts, sig: signature });
+  if (dbRowIndex < incomingRows.length) {
+    for (let i = dbRowIndex; i < incomingRows.length; i++) {
+      toInsert.push(incomingRows[i]);
     }
-
-    if (!dbSignatureSet.has(signature)) {
-      toInsert.push(row);
-      if (debugLogCount < 5) {
-        console.log(`\n[Diff Debug] Found Mismatch Row (Index: ${idx}):`);
-        console.log(`  -> Excel Raw:`, JSON.stringify(row));
-        console.log(`  -> Signature:`, signature);
-        console.log(`  -> Reason: This signature does NOT exist in the DB.`);
-        debugLogCount++;
-      }
-    }
-  });
+  }
 
   // =========================================================================
   // 如果发现大量新增（意味着匹配失败），打印对比详情
   // 只有当数据库有数据，但我们判定 Excel 数据全部是新增时，这通常意味着对比逻辑崩了
   // =========================================================================
-  if (dbCount > 0 && toInsert.length > (incomingRows.length * 0.8)) {
+  if (dbRowIndex > 0 && (toInsert.length + toUpdate.length) > (incomingRows.length * 0.8)) {
     console.log(`\n============== DIFF DEBUG: ${tableName} ==============`);
-    console.log(`DB has ${dbCount} rows, Incoming has ${incomingRows.length} rows.`);
-    console.log(`Diff result says: Insert ${toInsert.length} new rows (Mismatch!).`);
+    console.log(`DB Rows: ${dbRowIndex}, Excel Rows: ${incomingRows.length}`);
+    console.log(`Plan: Update ${toUpdate.length}, Insert ${toInsert.length}`);
 
     console.log(`--- [DB Sample Row 1] ---`);
     if (dbDebugSamples[0]) {
-        // console.log('Raw:', JSON.stringify(dbDebugSamples[0].raw));
-        console.log('Normalized Parts:', JSON.stringify(dbDebugSamples[0].normalized));
-        console.log('Signature:', dbDebugSamples[0].sig);
+      // console.log('Raw:', JSON.stringify(dbDebugSamples[0].raw));
+      console.log('Normalized Parts:', JSON.stringify(dbDebugSamples[0].normalized));
+      console.log('Signature:', dbDebugSamples[0].sig);
     }
 
     console.log(`--- [Incoming Sample Row 1] ---`);
     if (incomingDebugSamples[0]) {
-        // console.log('Raw:', JSON.stringify(incomingDebugSamples[0].raw));
-        console.log('Normalized Parts:', JSON.stringify(incomingDebugSamples[0].normalized));
-        console.log('Signature:', incomingDebugSamples[0].sig);
+      // console.log('Raw:', JSON.stringify(incomingDebugSamples[0].raw));
+      console.log('Normalized Parts:', JSON.stringify(incomingDebugSamples[0].normalized));
+      console.log('Signature:', incomingDebugSamples[0].sig);
     }
 
     console.log(`========================================================\n`);
@@ -250,8 +256,9 @@ export async function calculateIncrementalDiff(
 
   return {
     toInsert,
+    toUpdate,
     isSchemaChanged: false,
     isNewTable: false,
-    dbCount
+    dbCount: dbRowIndex
   };
 }

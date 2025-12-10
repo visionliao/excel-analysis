@@ -29,7 +29,7 @@
     { "original": "Non-Renewable Energy Production (kWh/yr)", "dbField": "energy_non_renewable", "comment": "非可再生能源产量", "dataType": 3 },
     { "original": "Scope 1 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_1", "comment": "范围1排放量", "dataType": 3 },
     { "original": "Scope 2 emissions - location based (tonne CO2e/yr)", "dbField": "emissions_scope_2_loc", "comment": "范围2排放(基于位置)", "dataType": 3 },
-    { "original": "Scope 2 emissions - market based (tonne)", "dbField": "emissions_scope_2_mkt", "comment": "范围2排放(基于市场)", "dataType": 3 },
+    { "original": "Scope 2 emissions - market based (tonne", "dbField": "emissions_scope_2_mkt", "comment": "范围2排放(基于市场)", "dataType": 3 },
     { "original": "Scope 3 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_3", "comment": "范围3排放量", "dataType": 3 },
     { "original": "Total operational carbon - location based (tonne CO2e/yr)", "dbField": "carbon_total_loc", "comment": "总运营碳排放(位置)", "dataType": 3 },
     { "original": "Total operational carbon - market based (tonne CO2e/yr)", "dbField": "carbon_total_mkt", "comment": "总运营碳排放(市场)", "dataType": 3 },

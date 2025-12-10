@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
       // 使用通用 Diff 逻辑
       const diffResult = await calculateIncrementalDiff(client, tableName, columns, rows);
-      const { isNewTable, isSchemaChanged, toInsert, dbCount } = diffResult;
+      const { isNewTable, isSchemaChanged, toInsert, toUpdate, dbCount } = diffResult;
 
       // 根据策略生成报告文案
       if (isNewTable) {
@@ -94,14 +94,24 @@ export async function POST(req: NextRequest) {
         } else {
           // 增量模式
           const insertCount = toInsert.length;
-          if (insertCount > 0) {
+          const updateCount = toUpdate ? toUpdate.length : 0;
+          if (insertCount > 0 || updateCount > 0) {
+            // 1. 获取更新行的 ID
+            const updateIds = toUpdate ? toUpdate.map((u: any) => u.id) : [];
+            // 2. 计算新增行的 ID (基于当前 DB 总行数递增)
+            // 假设 dbCount=100, 新增3行，则 ID 为 101, 102, 103
+            const insertIds = toInsert.map((_: any, i: number) => dbCount + 1 + i);
             report.push({
               tableName,
               status: 'DATA_INCREMENTAL',
-              message: `[增量模式] 检测到 ${insertCount} 条新数据，将执行插入。`,
+              message: `[增量模式] 检测到数据更新。`,
               newRowCount: dbCount + insertCount,
               oldRowCount: dbCount,
-              insertCount: insertCount,
+              insertCount: insertCount + updateCount,
+              detailIds: {
+                updates: updateIds,
+                inserts: insertIds
+              },
               priority: 2 // 有新增，排前面
             });
           } else {

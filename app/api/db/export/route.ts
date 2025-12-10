@@ -200,10 +200,12 @@ export async function POST(req: NextRequest) {
     // 统计数据
     let totalTablesProcessed = 0;
     let totalRowsInserted = 0;
+    let totalRowsUpdated = 0;
 
     for (const table of tables) {
       const { tableName, columns, rows } = table;
       let rowsToInsert = rows;
+      let rowsToUpdate: any[] = [];
 
       // 1. 判断操作模式
       let needCreateTable = false;
@@ -222,16 +224,18 @@ export async function POST(req: NextRequest) {
       } else {
         // 表存在且结构一致
         if (strategy === 'overwrite') {
+          // 全量模式
           await client.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
           needCreateTable = true;
         } else {
           // 增量模式
           rowsToInsert = diff.toInsert;
-          if (rowsToInsert.length === 0) {
-            console.log(`[Export] ${tableName}: No new data.`);
+          rowsToUpdate = diff.toUpdate || [];
+          if (rowsToInsert.length === 0 && rowsToUpdate.length === 0) {
+            console.log(`[Export] ${tableName}: No changes.`);
             continue;
           }
-          console.log(`[Export] ${tableName}: Incrementally inserting ${rowsToInsert.length} rows.`);
+          console.log(`[Export] ${tableName}: Insert ${rowsToInsert.length}, Update ${rowsToUpdate.length}`);
         }
       }
 
@@ -239,6 +243,7 @@ export async function POST(req: NextRequest) {
       if (needCreateTable) {
         const colDefs = columns.map((c: any) => `"${c.name}" ${c.type}`).join(',\n');
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
+        rowsToInsert = rows; // 新表全量插入
       }
 
       // 3. 插入
@@ -261,8 +266,7 @@ export async function POST(req: NextRequest) {
             for (const col of columns) {
               let val = row[col.originalName];
 
-              const typeUp = col.type.toUpperCase();
-              // 情况A: val 是标准的 JS Date 对象 (parseExcelBuffer 产生)
+              // val 是标准的 JS Date 对象 (parseExcelBuffer 产生)
               if (val instanceof Date) {
                 val = forceDateToString(val, col.type);
               }
@@ -307,6 +311,40 @@ export async function POST(req: NextRequest) {
         // 累加行数
         totalRowsInserted += rowsToInsert.length;
       }
+
+      // 4. 更新 (基于 ID)
+      if (rowsToUpdate.length > 0) {
+        if (rowsToInsert.length === 0) totalTablesProcessed++; // 如果只更新不插入，也算处理了
+
+        for (const item of rowsToUpdate) {
+          const targetId = item.id; // DB ID
+          const rowData = item.data; // Excel Row
+
+          const setParts: string[] = [];
+          const values: any[] = [];
+          let paramIdx = 1;
+
+          for (const col of columns) {
+            let val = rowData[col.originalName];
+
+            // 日期转字符串
+            if (val instanceof Date) val = forceDateToString(val, col.type);
+
+            // 容错处理
+            let err = validateValue(val, col.type);
+            if (err) val = DataSanitizer.tryRecover(val, col.type);
+            if (val === undefined || val === '') val = null;
+
+            setParts.push(`"${col.name}" = $${paramIdx++}`);
+            values.push(val);
+          }
+
+          values.push(targetId);
+          const updateSql = `UPDATE "${tableName}" SET ${setParts.join(', ')} WHERE id = $${paramIdx}`;
+          await client.query(updateSql, values);
+        }
+        totalRowsUpdated += rowsToUpdate.length;
+      }
     }
 
     // 提交数据事务 (确保数据安全落地)
@@ -339,7 +377,7 @@ export async function POST(req: NextRequest) {
       success: true,
       stats: {
         tables: totalTablesProcessed,
-        rows: totalRowsInserted,
+        rows: totalRowsInserted + totalRowsUpdated,
         relationships: relationships?.length || 0,
         strategy: strategy
       }
