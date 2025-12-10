@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { FileUploadArea, type FileItem } from "@/components/excel-data-analysis"
-import { TableExportPanel } from "@/components/data-export"
+import { TableExportPanel, type ExportPanelState } from "@/components/data-export"
 import { GuidePanel } from "@/components/guide-panel"
 import { GroupedTableData, SavedSchemaItem } from "@/components/data-structure-display"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { TableSandbox } from "@/components/table-sandbox"
-import { DbOpsPanel } from "@/components/db-ops-panel"
+import { DbOpsPanel, type OpsPanelState } from "@/components/db-ops-panel"
 import { cn } from "@/lib/utils" // 引入 cn 工具函数
 
 export default function Home() {
@@ -21,6 +21,24 @@ export default function Home() {
   const [parsedData, setParsedData] = useState<GroupedTableData[]>([])
   const [currentTimestamp, setCurrentTimestamp] = useState<string>('')
   const [savedSchema, setSavedSchema] = useState<SavedSchemaItem[] | null>(null)
+
+  // 全局状态 - 数据库连接 (共享)
+  const [globalPostgresUrl, setGlobalPostgresUrl] = useState("")
+
+  // 持久化状态 - 导出面板
+  const [exportPanelState, setExportPanelState] = useState<ExportPanelState>({
+    historyList: [],
+    selectedTimestamp: '',
+    schemaTables: [],
+    report: null
+  })
+
+  // 持久化状态 - 操作面板
+  const [opsPanelState, setOpsPanelState] = useState<OpsPanelState>({
+      historyList: [],
+      selectedTimestamp: '',
+      tables: []
+  })
 
   // 页面初始化加载状态
   const [isInitializing, setIsInitializing] = useState(true)
@@ -119,8 +137,24 @@ export default function Home() {
             />
           )}
           {activeMenu === "table-sandbox" && <TableSandbox />}
-          {activeMenu === "table-export" && <TableExportPanel />}
-          {activeMenu === "db-ops" && <DbOpsPanel />}
+          {/* 传递状态给导出面板 */}
+          {activeMenu === "table-export" && (
+            <TableExportPanel
+              postgresUrl={globalPostgresUrl}
+              setPostgresUrl={setGlobalPostgresUrl}
+              state={exportPanelState}
+              setState={setExportPanelState}
+            />
+          )}
+          {/* 传递状态给操作面板 */}
+          {activeMenu === "db-ops" && (
+            <DbOpsPanel
+                postgresUrl={globalPostgresUrl}
+                setPostgresUrl={setGlobalPostgresUrl}
+                state={opsPanelState}
+                setState={setOpsPanelState}
+            />
+          )}
           {activeMenu === "guide" && <GuidePanel />}
         </div>
       </main>

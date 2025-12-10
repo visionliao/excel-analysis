@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
-interface TableData {
+export interface TableData {
   tableName: string
   originalName?: string
   exists: boolean
@@ -31,14 +31,25 @@ interface TableData {
   isLoadingMore?: boolean
 }
 
-export function DbOpsPanel() {
+// 定义持久化状态
+export interface OpsPanelState {
+    historyList: string[]
+    selectedTimestamp: string
+    tables: TableData[]
+}
+
+interface DbOpsPanelProps {
+    postgresUrl: string
+    setPostgresUrl: (url: string) => void
+    state: OpsPanelState
+    setState: (newState: OpsPanelState | ((prev: OpsPanelState) => OpsPanelState)) => void
+}
+
+export function DbOpsPanel({ postgresUrl, setPostgresUrl, state, setState }: DbOpsPanelProps) {
   const { toast } = useToast()
 
-  const [postgresUrl, setPostgresUrl] = useState("")
-  const [historyList, setHistoryList] = useState<string[]>([])
-  const [selectedTimestamp, setSelectedTimestamp] = useState<string>('')
+  const { historyList, selectedTimestamp, tables } = state;
 
-  const [tables, setTables] = useState<TableData[]>([])
   const [isQuerying, setIsQuerying] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -47,24 +58,40 @@ export function DbOpsPanel() {
 
   // 1. 初始化
   useEffect(() => {
-    // 获取 DB 配置
-    fetch('/api/config/get-db-url').then(res => res.json()).then(data => {
-        if (data.success && data.url) setPostgresUrl(data.url)
-    });
-    // 获取历史版本
-    fetch('/api/schema/list').then(res => res.json()).then(data => {
-      if (data.success && data.timestamps.length > 0) {
-        setHistoryList(data.timestamps)
-        setSelectedTimestamp(data.timestamps[0])
-      }
-    });
+    if (!postgresUrl) {
+        fetch('/api/config/get-db-url').then(res => res.json()).then(data => {
+            if (data.success && data.url) setPostgresUrl(data.url)
+        });
+    }
+
+    if (historyList.length === 0) {
+        fetch('/api/schema/list').then(res => res.json()).then(data => {
+            if (data.success && data.timestamps.length > 0) {
+                setState(prev => ({
+                    ...prev,
+                    historyList: data.timestamps,
+                    selectedTimestamp: prev.selectedTimestamp || data.timestamps[0]
+                }));
+            }
+        });
+    }
   }, [])
+
+  // 处理下拉切换
+  const handleTimestampChange = (val: string) => {
+      setState(prev => ({
+          ...prev,
+          selectedTimestamp: val,
+          tables: [] // 清空之前查询的数据
+      }));
+  };
 
   // 2. 查询数据
   const handleQuery = useCallback(async () => {
     if (!selectedTimestamp) return;
     setIsQuerying(true);
-    setTables([]); // 清空旧数据
+    // 清空旧数据
+    setState(prev => ({ ...prev, tables: [] }));
 
     try {
       const res = await fetch('/api/db/ops/list', {
@@ -77,7 +104,7 @@ export function DbOpsPanel() {
       if (result.success) {
         // 默认全部展开，方便查看
         const processedTables = result.tables.map((t: any) => ({ ...t, isExpanded: true }));
-        setTables(processedTables);
+        setState(prev => ({ ...prev, tables: processedTables }));
         if (processedTables.length === 0) {
             toast({ title: "查询完成", description: "该版本没有定义任何表格。" });
         } else {
@@ -91,7 +118,7 @@ export function DbOpsPanel() {
     } finally {
         setIsQuerying(false);
     }
-  }, [postgresUrl, selectedTimestamp, toast]);
+  }, [postgresUrl, selectedTimestamp, toast, setState]);
 
   // 3. 加载更多
   const handleLoadMore = async (index: number) => {
@@ -100,10 +127,15 @@ export function DbOpsPanel() {
     // 每次加载当前行数的 2 倍，至少 100 行
     const limit = Math.max(currentCount * 2, 100); 
 
-    // 更新状态为加载中
-    const newTables = [...tables];
-    newTables[index].isLoadingMore = true;
-    setTables(newTables);
+    // 局部 loading 状态更新
+    const updateTableLoading = (loading: boolean) => {
+        setState(prev => {
+            const newTables = [...prev.tables];
+            newTables[index] = { ...newTables[index], isLoadingMore: loading };
+            return { ...prev, tables: newTables };
+        });
+    };
+    updateTableLoading(true);
 
     try {
         const res = await fetch('/api/db/ops/more', {
@@ -119,19 +151,36 @@ export function DbOpsPanel() {
         const result = await res.json();
 
         if (result.success && result.rows.length > 0) {
-            newTables[index].rows = [...newTables[index].rows, ...result.rows];
+            setState(prev => {
+                const newTables = [...prev.tables];
+                newTables[index] = {
+                    ...newTables[index],
+                    rows: [...newTables[index].rows, ...result.rows],
+                    isLoadingMore: false
+                };
+                return { ...prev, tables: newTables };
+            });
         } else if (result.success && result.rows.length === 0) {
             toast({ description: "没有更多数据了" });
+            updateTableLoading(false);
         } else {
             toast({ title: "加载失败", description: result.error, variant: "destructive" });
+            updateTableLoading(false);
         }
     } catch(e) {
         console.error(e);
-    } finally {
-        newTables[index].isLoadingMore = false;
-        setTables([...newTables]); // 触发重渲染
+        updateTableLoading(false);
     }
   };
+
+  // 切换展开/折叠
+  const toggleExpanded = (index: number, open: boolean) => {
+      setState(prev => {
+          const newTables = [...prev.tables];
+          newTables[index] = { ...newTables[index], isExpanded: open };
+          return { ...prev, tables: newTables };
+      });
+  }
 
   // 4. 删除表操作
   const confirmDelete = (targetNames: string[]) => {
@@ -224,7 +273,7 @@ export function DbOpsPanel() {
                     </label>
                     <div className="flex items-center gap-2 max-w-md">
                         <History className="text-muted-foreground w-4 h-4" />
-                        <Select value={selectedTimestamp} onValueChange={setSelectedTimestamp}>
+                        <Select value={selectedTimestamp} onValueChange={handleTimestampChange}>
                             <SelectTrigger className="font-mono bg-white">
                                 <SelectValue placeholder="选择版本..." />
                             </SelectTrigger>
@@ -274,11 +323,7 @@ export function DbOpsPanel() {
       <div className="space-y-6">
         {tables.map((table, index) => (
             <Card key={table.tableName} className={`border-l-4 shadow-sm ${table.exists ? 'border-l-blue-500' : 'border-l-slate-300 opacity-70'}`}>
-                <Collapsible open={table.isExpanded} onOpenChange={(open) => {
-                    const newTables = [...tables];
-                    newTables[index].isExpanded = open;
-                    setTables(newTables);
-                }}>
+                <Collapsible open={table.isExpanded} onOpenChange={(open) => toggleExpanded(index, open)}>
                     <div className="p-4 flex items-center justify-between bg-slate-50/50">
                         <div className="flex items-center gap-4 flex-1">
                             <CollapsibleTrigger asChild>

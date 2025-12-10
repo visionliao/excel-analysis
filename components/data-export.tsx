@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-interface DiffReportItem {
+export interface DiffReportItem {
   tableName: string
   status: 'NEW_TABLE' | 'SCHEMA_CHANGE' | 'DATA_UPDATE' | 'DATA_INCREMENTAL' | 'DATA_OVERWRITE' | 'NO_CHANGE'
   message: string
@@ -43,9 +43,16 @@ interface DiffReportItem {
   }
 }
 
-interface SchemaTablePreview {
+export interface SchemaTablePreview {
   tableName: string
   originalName: string
+}
+
+export interface ExportPanelState {
+  historyList: string[]
+  selectedTimestamp: string
+  schemaTables: SchemaTablePreview[]
+  report: DiffReportItem[] | null
 }
 
 // 定义后端返回的错误详情结构
@@ -65,23 +72,20 @@ interface SuccessStats {
   relationships: number
 }
 
-export function TableExportPanel() {
+interface TableExportPanelProps {
+    postgresUrl: string
+    setPostgresUrl: (url: string) => void
+    state: ExportPanelState
+    setState: (newState: ExportPanelState | ((prev: ExportPanelState) => ExportPanelState)) => void
+}
+
+export function TableExportPanel({ postgresUrl, setPostgresUrl, state, setState }: TableExportPanelProps) {
   const { toast } = useToast()
+  const { historyList, selectedTimestamp, schemaTables, report } = state;
 
-  const [postgresUrl, setPostgresUrl] = useState("")
-
-  // 版本控制状态
-  const [historyList, setHistoryList] = useState<string[]>([])
-  const [selectedTimestamp, setSelectedTimestamp] = useState<string>('')
-
-  // 预览列表状态
-  const [schemaTables, setSchemaTables] = useState<SchemaTablePreview[]>([])
   const [isLoadingSchema, setIsLoadingSchema] = useState(false)
-
-  // 操作状态
   const [isChecking, setIsChecking] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
-  const [report, setReport] = useState<DiffReportItem[] | null>(null)
 
   // 错误弹窗状态
   const [validationError, setValidationError] = useState<ValidationErrorDetail | null>(null)
@@ -93,38 +97,37 @@ export function TableExportPanel() {
 
   // 1. 初始化
   useEffect(() => {
-    const fetchDefaultConfig = async () => {
-      try {
-        const res = await fetch('/api/config/get-db-url');
-        const data = await res.json();
-        if (data.success && data.url) {
-          setPostgresUrl(data.url);
-        }
-      } catch (error) {
-        console.error("无法获取默认数据库配置", error);
-      }
-    };
-    fetchDefaultConfig();
+    if (!postgresUrl) {
+      fetch('/api/config/get-db-url').then(res => res.json()).then(d => {
+        if (d.success && d.url) setPostgresUrl(d.url)
+      });
+    }
 
-    fetch('/api/schema/list')
+    if (historyList.length === 0) {
+      fetch('/api/schema/list')
       .then(res => res.json())
-      .then(data => {
-        if (data.success && data.timestamps.length > 0) {
-          setHistoryList(data.timestamps)
-          setSelectedTimestamp(data.timestamps[0])
+      .then(d => {
+        if (d.success && d.timestamps.length > 0) {
+          // 初始化状态
+          setState(prev => ({
+            ...prev,
+            historyList: d.timestamps,
+            selectedTimestamp: prev.selectedTimestamp || d.timestamps[0]
+          }));
         }
       })
-      .catch(err => console.error("Failed to fetch schema list", err))
+      .catch(err => console.error("Failed to fetch schema list", err));
+    }
   }, [])
 
   // 2. 加载 Schema 预览
   useEffect(() => {
     if (!selectedTimestamp) return;
+    if (schemaTables.length > 0) return;
 
     const loadSchemaPreview = async () => {
-      setIsLoadingSchema(true);
-      setSchemaTables([]);
-      setReport(null);
+      // 只有当列表为空时才显示 loading，体验更好
+      if (schemaTables.length === 0) setIsLoadingSchema(true);
 
       try {
         const res = await fetch('/api/history/load-summary', {
@@ -139,9 +142,9 @@ export function TableExportPanel() {
             tableName: node.data.tableName,
             originalName: node.data.originalName || node.data.tableName
           }));
-          setSchemaTables(tables);
+          setState(prev => ({ ...prev, schemaTables: tables }));
         } else {
-          setSchemaTables([]);
+          setState(prev => ({ ...prev, schemaTables: [] }));
         }
       } catch (error) {
         console.error("Failed to load schema preview", error);
@@ -153,6 +156,17 @@ export function TableExportPanel() {
 
     loadSchemaPreview();
   }, [selectedTimestamp, toast]);
+
+  // 处理下拉选择变化
+  const handleTimestampChange = (val: string) => {
+    // 在这里做清空操作，因为是用户主动切换了版本
+    setState(prev => ({
+      ...prev,
+      selectedTimestamp: val,
+      schemaTables: [], // 清空预览
+      report: null      // 清空报告
+    }));
+  };
 
   // 3. 检查数据
   const handleCheckData = useCallback(async () => {
@@ -166,7 +180,8 @@ export function TableExportPanel() {
     }
 
     setIsChecking(true)
-    setReport(null)
+    // 开始检查前，先清空旧报告
+    setState(prev => ({ ...prev, report: null }));
 
     try {
       const res = await fetch('/api/db/check', {
@@ -180,7 +195,8 @@ export function TableExportPanel() {
 
       const result = await res.json()
       if (result.success) {
-        setReport(result.report)
+        // 保存报告到全局状态
+        setState(prev => ({ ...prev, report: result.report }));
         toast({ title: "检查完成", description: "已基于 table_schema.json 对比差异" })
       } else {
         toast({ title: "检查失败", description: result.error, variant: "destructive" })
@@ -190,7 +206,7 @@ export function TableExportPanel() {
     } finally {
         setIsChecking(false)
     }
-  }, [postgresUrl, selectedTimestamp, toast])
+  }, [postgresUrl, selectedTimestamp, toast, setState])
 
   // 4. 导出数据
   const handleExportData = useCallback(async () => {
@@ -227,7 +243,7 @@ export function TableExportPanel() {
           })
         }
         // 清空报告，防止重复提交
-        setReport(null)
+        setState(prev => ({ ...prev, report: null }));
       } else {
         // 优先处理校验错误
         if (result.errorType === 'VALIDATION_ERROR' && result.details) {
@@ -250,7 +266,7 @@ export function TableExportPanel() {
     } finally {
       setIsExporting(false)
     }
-  }, [postgresUrl, selectedTimestamp, report, toast])
+  }, [postgresUrl, selectedTimestamp, report, toast, setState])
 
   // 格式化 ID 列表显示
   const renderIdList = (ids: number[], type: 'insert' | 'update') => {
@@ -266,10 +282,10 @@ export function TableExportPanel() {
     const bgColorClass = type === 'insert' ? 'bg-green-50' : 'bg-blue-50';
 
     return (
-        <div className={`text-xs mt-1 font-mono ${colorClass} ${bgColorClass} p-2 rounded break-all`}>
-            <span className="font-bold">[{label} {ids.length} 条]:</span> ID 为 {displayIds}
-            {moreCount > 0 && <span className="opacity-70"> ... 等 {moreCount} 条</span>}
-        </div>
+      <div className={`text-xs mt-1 font-mono ${colorClass} ${bgColorClass} p-2 rounded break-all`}>
+        <span className="font-bold">[{label} {ids.length} 条]:</span> ID 为 {displayIds}
+        {moreCount > 0 && <span className="opacity-70"> ... 等 {moreCount} 条</span>}
+      </div>
     );
   };
 
@@ -424,7 +440,7 @@ export function TableExportPanel() {
               <AlertDialogTitle className="text-2xl text-green-700">导出成功</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-center">
-            所有数据已成功写入数据库，旧数据已覆盖。
+            所有数据已成功写入数据库。
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -469,7 +485,7 @@ export function TableExportPanel() {
         </label>
         <div className="flex items-center gap-2">
           <History className="text-muted-foreground w-4 h-4" />
-          <Select value={selectedTimestamp} onValueChange={setSelectedTimestamp}>
+          <Select value={selectedTimestamp} onValueChange={handleTimestampChange}>
             <SelectTrigger className="font-mono">
               <SelectValue placeholder="选择历史版本..." />
             </SelectTrigger>
