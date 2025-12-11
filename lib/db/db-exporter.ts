@@ -168,6 +168,15 @@ function validateValue(value: any, sqlType: string): string | null {
   return null;
 }
 
+// 导出详细结果接口
+export interface TableSyncDetail {
+    tableName: string
+    insertCount: number
+    updateCount: number
+    insertIds: number[]
+    updateIds: number[]
+}
+
 export interface ExportResult {
   success: boolean
   stats?: {
@@ -176,6 +185,7 @@ export interface ExportResult {
     relationships: number
     strategy: string
   }
+  detailsReport?: TableSyncDetail[]
   error?: string
   errorType?: string
   details?: any
@@ -212,10 +222,22 @@ export async function executeDatabaseSync(
     let totalRowsInserted = 0;
     let totalRowsUpdated = 0;
 
+    // 收集每张表的详细变更
+    const reportList: TableSyncDetail[] = [];
+
     for (const table of tables) {
       const { tableName, columns, rows } = table;
       let rowsToInsert = rows;
       let rowsToUpdate: any[] = [];
+
+      // 本表的统计容器
+      const currentTableStats: TableSyncDetail = {
+        tableName,
+        insertCount: 0,
+        updateCount: 0,
+        insertIds: [],
+        updateIds: []
+      };
 
       let needCreateTable = false;
       const diff = await calculateIncrementalDiff(client, tableName, columns, rows);
@@ -235,6 +257,7 @@ export async function executeDatabaseSync(
           rowsToUpdate = diff.toUpdate || [];
           if (rowsToInsert.length === 0 && rowsToUpdate.length === 0) {
             // console.log(`[Export] ${tableName}: No changes.`);
+            reportList.push(currentTableStats);
             continue;
           }
           console.log(`[Export] ${tableName}: Insert ${rowsToInsert.length}, Update ${rowsToUpdate.length}`);
@@ -310,9 +333,12 @@ export async function executeDatabaseSync(
             }
             placeholders.push(`(${rowPlaceholders.join(',')})`);
           }
-          const insertSql = `INSERT INTO "${tableName}" (${keys}) VALUES ${placeholders.join(',')}`;
-          await client.query(insertSql, values);
+          const insertSql = `INSERT INTO "${tableName}" (${keys}) VALUES ${placeholders.join(',')} RETURNING id`;
+          const res = await client.query(insertSql, values);
+          // 收集 ID
+          res.rows.forEach(r => currentTableStats.insertIds.push(r.id));
         }
+        currentTableStats.insertCount = currentTableStats.insertIds.length;
         totalRowsInserted += rowsToInsert.length;
       }
 
@@ -343,9 +369,14 @@ export async function executeDatabaseSync(
           values.push(targetId);
           const updateSql = `UPDATE "${tableName}" SET ${setParts.join(', ')} WHERE id = $${paramIdx}`;
           await client.query(updateSql, values);
+          // 收集 ID
+          currentTableStats.updateIds.push(targetId);
         }
+        currentTableStats.updateCount = currentTableStats.updateIds.length;
         totalRowsUpdated += rowsToUpdate.length;
       }
+      // 将本表统计推入总报告
+      reportList.push(currentTableStats);
     }
 
     await client.query('COMMIT');
@@ -374,7 +405,8 @@ export async function executeDatabaseSync(
         rows: totalRowsInserted + totalRowsUpdated,
         relationships: relationships?.length || 0,
         strategy: strategy
-      }
+      },
+      detailsReport: reportList
     };
   } catch (error: any) {
     if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
