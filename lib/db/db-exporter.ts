@@ -273,9 +273,13 @@ export async function executeDatabaseSync(
               if (colExists) {
                 try {
                   const idxName = `idx_unique_${tableName}_${colName}`;
-                  // IF NOT EXISTS 语法在 PG 9.5+ 支持，为了兼容性和简单，用 try-catch 忽略错误即可
-                  await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
-                  console.log(`  + [Config] Ensured UNIQUE index for ${tableName}.${colName}`);
+                  // 1. 先检查索引是否存在
+                  const checkIdx = await client.query(`SELECT 1 FROM pg_indexes WHERE indexname = $1`, [idxName]);
+                  // 2. 不存在才创建
+                  if (checkIdx.rowCount === 0) {
+                    await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
+                    console.log(`  + [Config] Ensured UNIQUE index for ${tableName}.${colName}`);
+                  }
                 } catch (e: any) {
                   // 忽略 "relation already exists" 错误
                 }
@@ -318,8 +322,11 @@ export async function executeDatabaseSync(
             if (colExists) {
               try {
                 const idxName = `idx_unique_${tableName}_${colName}`;
-                await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
-                console.log(`  + [Config] Created UNIQUE index for ${tableName}.${colName}`);
+                const checkIdx = await client.query(`SELECT 1 FROM pg_indexes WHERE indexname = $1`, [idxName]);
+                if (checkIdx.rowCount === 0) {
+                  await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
+                  console.log(`  + [Config] Created UNIQUE index for ${tableName}.${colName}`);
+                }
               } catch (e: any) {
                 console.warn(`  - Failed to create unique index for ${tableName}.${colName}: ${e.message}`);
               }

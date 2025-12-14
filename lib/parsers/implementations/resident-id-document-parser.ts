@@ -46,7 +46,28 @@ export class ResidentIdDocumentParser extends BaseFileParser {
    * 验证与调试
    */
   protected transformRow(row: any, headers: string[]): any {
+    // 1. 先执行基类的通用转换 (比如日期格式化等)
     const newRow = super.transformRow(row, headers);
+
+    // 2. 找到房号的 Key (因为 adjustHeaders 修改过，key 应该是 "房号" 或包含 "房号" 的字符串)
+    const roomKey = headers.find(h => h && h.includes('房号'));
+
+    // 3. 清洗房号中的多余前导 0，比如A0922-A922，B0307-B307，否则这些房号和 room_details 中的房号对不上
+    if (roomKey && newRow[roomKey]) {
+      const originalRoom = String(newRow[roomKey]).trim();
+
+      // 正则逻辑：
+      // ^([A-Za-z]+) -> 捕获开头的字母 (Group $1)
+      // 0            -> 匹配字母后面紧跟的 0 (不捕获，就是要删掉它)
+      // (\d+)$       -> 捕获剩余的数字 (Group $2)
+      // 替换为：$1$2 (字母+剩余数字)
+      const cleanRoom = originalRoom.replace(/^([A-Za-z]+)0(\d+)$/, '$1$2');
+
+      if (cleanRoom !== originalRoom) {
+        // console.log(`[Room Clean] ${originalRoom} -> ${cleanRoom}`); // 调试用
+        newRow[roomKey] = cleanRoom;
+      }
+    }
 
     // 调试日志：检查前几行的房号是否读出来了
     if (this.debugCount < 3) {
