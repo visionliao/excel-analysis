@@ -506,5 +506,23 @@
     { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
     { "original": "更新人", "dbField": "updated_by", "comment": "更新人", "dataType": 0 },
     { "original": "更新时间", "dbField": "updated_at", "comment": "更新时间", "dataType": 6 }
+  ],
+  "dim_room_type": [
+    { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+    { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
+    { "original": "面积", "dbField": "area_sqm", "comment": "面积(平米)", "dataType": 3 },
+    { "original": "房间数量", "dbField": "room_count", "comment": "房间数量", "dataType": 2 }
+  ],
+  "dim_status_map": [
+    { "original": "房间状态", "dbField": "status", "comment": "房间状态", "dataType": 0 },
+    { "original": "状态描述", "dbField": "status_desc", "comment": "状态描述", "dataType": 0 }
+  ],
+  "dim_work_order_items": [
+    { "original": "服务项目代码", "dbField": "item_code", "comment": "服务项目代码", "dataType": 0 },
+    { "original": "服务项目描述", "dbField": "item_desc", "comment": "服务项目描述", "dataType": 0 }
+  ],
+  "dim_work_locations": [
+    { "original": "作业区域代码", "dbField": "location_code", "comment": "作业区域代码", "dataType": 0 },
+    { "original": "作业区域描述", "dbField": "location_desc", "comment": "作业区域描述", "dataType": 0 }
   ]
 }

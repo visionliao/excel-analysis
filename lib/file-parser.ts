@@ -17,7 +17,10 @@ export interface ParsedTableData {
 export async function parseExcelBuffer(buffer: Buffer, fileName: string): Promise<{ headers: string[], rows: any[] }> {
   // 1. 获取标准英文表名
   const baseName = getBaseTableName(fileName);
+  console.log(`Input FileName: "${fileName}"`);
+  console.log(`Parsed BaseName: "${baseName}" (Length: ${baseName.length})`);
   const tableName = TABLE_MAPPING[baseName] || `unknown_${baseName}`;
+  console.log(`tableName: "${tableName}"`);
 
   // 2. 从工厂获取对应的解析器
   const parser = ParserFactory.getParser(tableName);

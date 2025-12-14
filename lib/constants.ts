@@ -49,7 +49,11 @@ export const TABLE_MAPPING: Record<string, string> = {
   'Statstics': 'statistics_general',
 
   // other
-  'spark_room_details': 'room_details'
+  'spark_room_details': 'room_details',
+  '房型代码表': 'dim_room_type',
+  '房间状态表': 'dim_status_map',
+  '工单服务项目表': 'dim_work_order_items',
+  '工单服务区域表': 'dim_work_locations'
 };
 
 // 用于从文件名提取基础名称的正则

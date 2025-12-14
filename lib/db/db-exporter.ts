@@ -214,6 +214,16 @@ export async function executeDatabaseSync(
   const { tables, relationships } = fullData;
   const client = new Client({ connectionString: targetConnectionString, statement_timeout: 60000 });
 
+  // 公共表的唯一约束白名单
+  // 定义哪些表的哪些字段需要建立唯一索引 (用于支持外键指向)
+  const SPECIAL_UNIQUE_KEYS: Record<string, string[]> = {
+      'dim_room_type': ['room_code'],
+      'dim_status_map': ['status'],
+      'dim_work_order_items': ['item_code', 'item_desc'],
+      'dim_work_locations': ['location_code', 'location_desc'],
+      'room_details': ['room_number'] // 加上这一行
+  };
+
   try {
     await client.connect();
     await client.query('BEGIN');
@@ -255,6 +265,23 @@ export async function executeDatabaseSync(
         } else {
           rowsToInsert = diff.toInsert;
           rowsToUpdate = diff.toUpdate || [];
+          // 即使没有数据变化，也要确保唯一索引存在！
+          if (SPECIAL_UNIQUE_KEYS[tableName]) {
+            const targetCols = SPECIAL_UNIQUE_KEYS[tableName];
+            for (const colName of targetCols) {
+              const colExists = columns.find((c: any) => c.name === colName);
+              if (colExists) {
+                try {
+                  const idxName = `idx_unique_${tableName}_${colName}`;
+                  // IF NOT EXISTS 语法在 PG 9.5+ 支持，为了兼容性和简单，用 try-catch 忽略错误即可
+                  await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
+                  console.log(`  + [Config] Ensured UNIQUE index for ${tableName}.${colName}`);
+                } catch (e: any) {
+                  // 忽略 "relation already exists" 错误
+                }
+              }
+            }
+          }
           if (rowsToInsert.length === 0 && rowsToUpdate.length === 0) {
             // console.log(`[Export] ${tableName}: No changes.`);
             reportList.push(currentTableStats);
@@ -279,6 +306,24 @@ export async function executeDatabaseSync(
           if (col.comment) {
             const safeComment = col.comment.replace(/'/g, "''");
             await client.query(`COMMENT ON COLUMN "${tableName}"."${col.name}" IS '${safeComment}'`);
+          }
+        }
+        // 公共表增加唯一约束
+        if (SPECIAL_UNIQUE_KEYS[tableName]) {
+          const targetCols = SPECIAL_UNIQUE_KEYS[tableName];
+          for (const colName of targetCols) {
+            // 确保该表真的有这个字段
+            const colExists = columns.find((c: any) => c.name === colName);
+
+            if (colExists) {
+              try {
+                const idxName = `idx_unique_${tableName}_${colName}`;
+                await client.query(`CREATE UNIQUE INDEX "${idxName}" ON "${tableName}" ("${colName}")`);
+                console.log(`  + [Config] Created UNIQUE index for ${tableName}.${colName}`);
+              } catch (e: any) {
+                console.warn(`  - Failed to create unique index for ${tableName}.${colName}: ${e.message}`);
+              }
+            }
           }
         }
 
