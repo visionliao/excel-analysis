@@ -74,13 +74,13 @@ export class DailyDepartureParser extends BaseFileParser {
   protected validateRow(row: any, headers: string[]): boolean {
     // 必须有 "账号"
     const accountKey = headers.find(h => h && h.includes('账号'));
-    if (accountKey && row[accountKey]) {
-      return true; // 只要有账号，就认为是有效行
-    }
-    
-    // 必须有 "房号"
+    // if (accountKey && row[accountKey]) {
+    //   return true; // 只要有账号，就认为是有效行
+    // }
+
+    // 必须"账号" 和 "房号"同时都有
     const roomKey = headers.find(h => h && h.includes('房号'));
-    if (roomKey && row[roomKey]) {
+    if ((accountKey && row[accountKey]) && (roomKey && row[roomKey])) {
       return true;
     }
 
