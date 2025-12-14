@@ -218,7 +218,7 @@ export async function executeDatabaseSync(
   // 定义哪些表的哪些字段需要建立唯一索引 (用于支持外键指向)
   const SPECIAL_UNIQUE_KEYS: Record<string, string[]> = {
       'dim_room_type': ['room_code'],
-      'dim_status_map': ['status'],
+      'dim_status_map': ['status', 'status_desc'],
       'dim_work_order_items': ['item_code', 'item_desc'],
       'dim_work_locations': ['location_code', 'location_desc'],
       'room_details': ['room_number'] // 加上这一行
