@@ -25,6 +25,7 @@ import { PostingDetailTaxSepParser } from './implementations/posting-detail-tax-
 import { WorkOrderParser } from './implementations/work-order-parser';
 import { ContractUnsignedParser } from './implementations/contract-unsigned-active-parser';
 import { BillDetailResidentParser } from './implementations/bill-detail-resident-parser';
+import { BillAllowanceDeductionParser } from './implementations/bill-allowance-deduction-parser';
 
 // 默认解析器 (使用基类逻辑)
 class DefaultParser extends BaseFileParser {}
@@ -57,6 +58,7 @@ export class ParserFactory {
     'work_orders': new WorkOrderParser(),
     'contract_unsigned_active': new ContractUnsignedParser(),
     'bill_detail_resident': new BillDetailResidentParser(),
+    'bill_allowance_deduction': new BillAllowanceDeductionParser(),
 
     // 在这里继续注册更多...
     // 'room_master_list': new RoomMasterParser(),
