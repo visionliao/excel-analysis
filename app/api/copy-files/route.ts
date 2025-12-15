@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { parseExcelBuffer, ParsedTableData } from '@/lib/file-parser'
+import { parseExcelBuffer, ParsedTableData, buildResidentRoomMap } from '@/lib/file-parser'
 import { getBaseTableName, TABLE_MAPPING } from '@/lib/constants'
 
 interface GroupedTableData extends ParsedTableData {
@@ -38,6 +38,23 @@ export async function POST(request: NextRequest) {
         console.log(`${i + 1}. ${f.relativePath || f.name}`);
     });
     console.log('====================================\n');
+
+    // 预处理：优先提取 resident_id_document_list 的数据
+    let residentRoomMap = new Map<string, string>();
+    // 找到对应文件
+    const residentFile = files.find((f: any) => getBaseTableName(f.name) === '指定日期在住客人证件号报表');
+    if (residentFile) {
+      try {
+        const buf = Buffer.from(residentFile.data, 'base64');
+        // 先解析它
+        const { rows } = await parseExcelBuffer(buf, residentFile.name);
+        // 构建映射
+        residentRoomMap = buildResidentRoomMap(rows);
+        console.log(`[Pre-process] Built Resident Map with ${residentRoomMap.size} entries.`);
+      } catch (e) {
+        console.warn('[Pre-process] Failed to build resident map:', e);
+      }
+    }
 
     const timestamp = getLocalTimestamp();
     const outputDir = join(process.cwd(), 'output', 'source', timestamp)
@@ -80,7 +97,9 @@ export async function POST(request: NextRequest) {
         await writeFile(join(targetDir, fileItem.name), buffer)
 
         // 3. 解析文件
-        const { headers, rows } = await parseExcelBuffer(buffer, fileItem.name);
+        const { headers, rows } = await parseExcelBuffer(buffer, fileItem.name, {
+          residentRoomMap
+        });
 
         // 4. 合并数据
         const currentTable = groupedTables[currentTableName];

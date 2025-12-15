@@ -2,7 +2,7 @@
 import { join, basename } from 'path'
 import { readFile, readdir } from 'fs/promises'
 import { existsSync } from 'fs'
-import { parseExcelBuffer } from '@/lib/file-parser'
+import { parseExcelBuffer, buildResidentRoomMap } from '@/lib/file-parser'
 import { getBaseTableName, TABLE_MAPPING } from '@/lib/constants'
 
 export const PG_TYPES = [
@@ -80,12 +80,26 @@ export async function loadSchemaAndData(timestamp: string): Promise<{
   });
   console.log('=========================================================\n');
 
+  // 预处理：优先读取并解析 resident_id_document_list
+  let residentRoomMap = new Map<string, string>();
+  const residentFilePath = validFiles.find(f => getBaseTableName(basename(f)) === '指定日期在住客人证件号报表');
+  if (residentFilePath) {
+    try {
+      const buf = await readFile(residentFilePath);
+      const { rows } = await parseExcelBuffer(buf, basename(residentFilePath));
+      residentRoomMap = buildResidentRoomMap(rows);
+      console.log(`[SchemaLoader] Pre-loaded Resident Map: ${residentRoomMap.size} entries.`);
+    } catch (e) {
+      console.warn('[SchemaLoader] Failed to pre-load resident map:', e);
+    }
+  }
+
   for (const filePath of validFiles) {
     const buffer = await readFile(filePath);
     const fileName = basename(filePath);
 
     // 复用 parseExcelBuffer 解析函数
-    const { rows } = await parseExcelBuffer(buffer, fileName);
+    const { rows } = await parseExcelBuffer(buffer, fileName, { residentRoomMap });
 
     const baseName = getBaseTableName(fileName);
     const tableName = TABLE_MAPPING[baseName] || `unknown_${baseName}`;

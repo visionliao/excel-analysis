@@ -9,6 +9,12 @@ export interface ParseResult {
 }
 
 export abstract class BaseFileParser {
+  // 上下文对象，用于跨表数据引用
+  public context: any = {};
+
+  public setContext(ctx: any) {
+    this.context = ctx;
+  }
 
   public parse(buffer: Buffer, fileName: string): ParseResult {
     const workbook = XLSX.read(buffer, {

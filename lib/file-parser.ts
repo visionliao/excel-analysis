@@ -14,7 +14,11 @@ export interface ParsedTableData {
   totalRows: number
 }
 
-export async function parseExcelBuffer(buffer: Buffer, fileName: string): Promise<{ headers: string[], rows: any[] }> {
+export async function parseExcelBuffer(
+  buffer: Buffer,
+  fileName: string,
+  context: any = {}
+): Promise<{ headers: string[], rows: any[] }> {
   // 1. 获取标准英文表名
   const baseName = getBaseTableName(fileName);
   console.log(`Input FileName: "${fileName}"`);
@@ -24,6 +28,9 @@ export async function parseExcelBuffer(buffer: Buffer, fileName: string): Promis
 
   // 2. 从工厂获取对应的解析器
   const parser = ParserFactory.getParser(tableName);
+
+  // 注入上下文
+  parser.setContext(context);
 
   const ext = extname(fileName).toLowerCase();
   console.log(`Processing ${fileName}, using parser: ${parser.constructor.name}`);
@@ -59,4 +66,30 @@ export async function parseExcelBuffer(buffer: Buffer, fileName: string): Promis
   // 3. 执行解析
   console.log(`Using parser for ${tableName}: ${parser.constructor.name}`);
   return await parser.parseWithFallback(buffer, fileName);
+}
+
+// 从 resident_id_document_list 的行数据中提取 Account -> Room 映射
+export function buildResidentRoomMap(rows: any[]): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!rows || rows.length === 0) return map;
+
+  // 找到 keys
+  const firstRow = rows[0];
+  if (!firstRow) return map;
+
+  const keys = Object.keys(firstRow);
+  const accountKey = keys.find(k => k.includes('账号') || k === 'account_no');
+  const roomKey = keys.find(k => k.includes('房号') || k === 'room_number');
+
+  if (accountKey && roomKey) {
+    for (const row of rows) {
+      const acc = String(row[accountKey]).trim();
+      const room = String(row[roomKey]).trim();
+      // 只有当房号有效且不是纯数字(或者是我们要的标准格式)时才存入
+      if (acc && room) {
+        map.set(acc, room);
+      }
+    }
+  }
+  return map;
 }
