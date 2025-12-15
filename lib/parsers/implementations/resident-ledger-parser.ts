@@ -44,6 +44,15 @@ export class ResidentLedgerParser extends BaseFileParser {
   protected transformRow(row: any, headers: string[]): any {
     const newRow = super.transformRow(row, headers);
 
+    // 清洗房号：去掉字母后紧跟的 0 (如 B0602 -> B602)
+    // 动态查找包含 "房号" 或 "Rmno" 的列名
+    const roomKey = headers.find(h => h && (h.includes('房号') || h.toLowerCase().includes('rmno')));
+    if (roomKey && newRow[roomKey]) {
+      const originalRoom = String(newRow[roomKey]).trim();
+      // 正则替换：字母+0+数字 -> 字母+数字
+      newRow[roomKey] = originalRoom.replace(/^([A-Za-z]+)0(\d+)$/, '$1$2');
+    }
+
     // 调试日志：检查账号是否读出来了
     if (this.debugCount < 3) {
       console.log(`\n========== [ResidentLedger] Row ${this.debugCount} Check ==========`);
