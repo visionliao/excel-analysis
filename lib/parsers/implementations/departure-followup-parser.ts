@@ -73,6 +73,27 @@ export class DepartureFollowupParser extends BaseFileParser {
         return String(cell.v || '').trim();
       };
 
+      // -----------------------------------------------------------
+      // 垃圾行过滤 (Garbage Collection)
+      // 在尝试合并之前，先检查这一行是不是页脚或打印信息
+      // 检查关键列 (C, D, E, F...) 是否包含 "Page", "页" 等关键字
+      // -----------------------------------------------------------
+      const checkCols = [2, 3, 4, 5, 11, 12, 19]; // 抽查房号、状态、STA、Salesman 列
+      let isGarbage = false;
+      for (const idx of checkCols) {
+        const val = getVal(idx).toLowerCase();
+        // 增加更多可能的页脚特征词
+        if (val.includes('page') || val.includes('页码') || val.includes('打印时间')) {
+          isGarbage = true;
+          break;
+        }
+      }
+
+      if (isGarbage) {
+        // console.log(`[Skipped Garbage Row ${r+1}] Found keyword.`);
+        continue; // 直接跳过，不合并，不处理
+      }
+
       // 检查 C 列 (Index 2) 是否有房间号
       const roomVal = getVal(2);
 
