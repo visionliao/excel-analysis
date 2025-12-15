@@ -65,9 +65,13 @@ export class ArAgingResidentParser extends BaseFileParser {
 
       // 读取 Index 1 (B列) 作为房号
       let roomVal = this.safeVal(rowArray[1]);
+      // 清洗房号：去掉字母后紧跟的 0 (如 A0201 -> A201)
+      if (roomVal) {
+        roomVal = roomVal.replace(/^([A-Za-z]+)0(\d+)$/, '$1$2');
+      }
       const nameVal = this.safeVal(rowArray[2]); // Index 2 姓名
 
-      // 【核心修复 2】处理合并行
+      // 处理合并行
       if (roomVal && roomVal !== '') {
         // 如果当前行有房号，更新记忆，且排除 Total 行
         if (roomVal.includes('合计') || roomVal.includes('Total')) continue;
