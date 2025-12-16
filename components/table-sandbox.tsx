@@ -61,7 +61,7 @@ interface LoadSummaryResponse {
     edges: Edge[]
     relationships?: any[]
   }
-  fieldMapping?: Record<string, FieldMappingItem[]>
+  fieldMapping?: Record<string, any>
 }
 
 export function TableSandbox() {
@@ -135,7 +135,24 @@ export function TableSandbox() {
     );
   }, [setNodes]);
 
-  // 3. 加载逻辑
+  // 3. 表备注变更回调
+  const handleTableRemarkChange = useCallback((tableName: string, value: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id !== tableName) return node;
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            tableRemarks: value // 更新 data 中的 tableRemarks
+          }
+        };
+      })
+    );
+  }, [setNodes]);
+
+  // 4. 加载逻辑
   useEffect(() => {
     if (!selectedTimestamp) return;
 
@@ -156,7 +173,9 @@ export function TableSandbox() {
               ...n,
               data: {
                 ...n.data,
-                onColumnChange: handleColumnChange
+                onColumnChange: handleColumnChange,
+                // 绑定备注修改回调
+                onTableRemarkChange: handleTableRemarkChange
               }
             }));
             setNodes(restoredNodes);
@@ -181,7 +200,23 @@ export function TableSandbox() {
               const X_OFFSET = 650;
               const Y_OFFSET = 600;
               // 获取该表对应的字段映射列表
-              const tableMappings = mappingData[table.tableName] || [];
+              const mappingEntry = mappingData[table.tableName];
+              let tableMappings: any[] = [];
+              let savedTableRemark = '';
+
+              if (mappingEntry && !Array.isArray(mappingEntry) && mappingEntry.columns) {
+                  // 新对象格式(增加了表的详细备注tableRemarks属性)
+                  tableMappings = mappingEntry.columns;
+                  savedTableRemark = mappingEntry.tableRemarks || '';
+              } else if (Array.isArray(mappingEntry)) {
+                  // 旧数组格式兼容(没有表详细备注tableRemarks属性)
+                  tableMappings = mappingEntry;
+              }
+
+              // 如果json中没有表的备注，则使用表的原始文件名称作为备注
+              if (!savedTableRemark) {
+                  savedTableRemark = table.originalBaseName;
+              }
 
               initialNodes.push({
                 id: table.tableName,
@@ -190,12 +225,14 @@ export function TableSandbox() {
                 data: {
                   tableName: table.tableName,
                   originalName: table.originalBaseName,
+                  tableRemarks: savedTableRemark,
                   onColumnChange: handleColumnChange,
+                  onTableRemarkChange: handleTableRemarkChange,
 
                   // 初始化字段：尝试从 mappingData 中查找
                   columns: table.headers.map((h: string) => {
                     const normalizedH = normalizeHeader(h);
-                    const matchedField = tableMappings.find(m =>
+                    const matchedField = tableMappings.find((m: any) =>
                       normalizeHeader(m.original) === normalizedH
                     );
 
@@ -231,9 +268,9 @@ export function TableSandbox() {
     }
 
     loadSchema();
-  }, [selectedTimestamp, handleColumnChange, setNodes, setEdges, toast, normalizeHeader])
+  }, [selectedTimestamp, handleColumnChange,handleTableRemarkChange, setNodes, setEdges, toast, normalizeHeader])
 
-  // 4. 连线回调
+  // 5. 连线回调
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge({
       ...params,
@@ -245,7 +282,7 @@ export function TableSandbox() {
     [setEdges],
   );
 
-  // 5. 校验逻辑
+  // 6. 校验逻辑
   const validateSchema = () => {
     const errors: string[] = [];
     nodes.forEach(node => {
@@ -283,7 +320,7 @@ export function TableSandbox() {
     }
   }
 
-  // 6. 保存逻辑
+  // 7. 保存逻辑
   const executeSave = async () => {
     if (!selectedTimestamp) return;
     setValidationDialogOpen(false);
@@ -321,7 +358,8 @@ export function TableSandbox() {
           ...n,
           data: {
             ...n.data,
-            onColumnChange: undefined
+            onColumnChange: undefined,
+            onTableRemarkChange: undefined
           }
         })),
         edges, // 保存原始连线用于恢复画布

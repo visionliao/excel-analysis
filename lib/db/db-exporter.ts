@@ -301,10 +301,12 @@ export async function executeDatabaseSync(
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
 
         // 表备注写入
-        if (table.originalName) {
-          const safeComment = table.originalName.replace(/'/g, "''");
+        const finalTableComment = table.tableRemarks || table.originalName;
+        if (finalTableComment) {
+          const safeComment = finalTableComment.replace(/'/g, "''");
           await client.query(`COMMENT ON TABLE "${tableName}" IS '${safeComment}'`);
         }
+
         // 列字段备注写入
         for (const col of columns) {
           if (col.comment) {

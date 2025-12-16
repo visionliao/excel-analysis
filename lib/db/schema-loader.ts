@@ -13,6 +13,7 @@ export const PG_TYPES = [
 export interface TableExportContext {
   tableName: string
   originalName?: string
+  tableRemarks?: string
   columns: {
     name: string      // dbField
     type: string      // SQL type
@@ -143,6 +144,7 @@ export async function loadSchemaAndData(timestamp: string): Promise<{
     tables.push({
       tableName: tableName,
       originalName: tableDef.originalName || tableDef.originalBaseName || '',
+      tableRemarks: tableDef.tableRemarks || '',
       columns: activeColumns,
       rows: mappedRows,
       totalRows: mappedRows.length

@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { Database } from 'lucide-react'
+import { Database, FileText } from 'lucide-react'
 
 // Postgres 数据类型集合 (下标即 value)
 export const POSTGRES_TYPES = [
@@ -45,14 +45,16 @@ export interface ColumnMapping {
 export interface SchemaNodeData extends Record<string, unknown> {
   tableName: string
   originalName: string
+  tableRemarks?: string
   columns: ColumnMapping[]
   onColumnChange: (tableName: string, colIndex: number, field: keyof ColumnMapping, value: any) => void
+  onTableRemarkChange?: (tableName: string, value: string) => void
 }
 
 export type SchemaNodeType = Node<SchemaNodeData, 'schemaNode'>;
 
 const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
-  const { tableName, originalName, columns, onColumnChange } = data;
+  const { tableName, originalName, columns, tableRemarks, onColumnChange, onTableRemarkChange } = data;
 
   return (
     <Card className="min-w-[520px] shadow-xl border-2 border-slate-200 bg-white">
@@ -72,6 +74,21 @@ const SchemaNode = ({ data }: NodeProps<SchemaNodeType>) => {
 
       {/* 2. 字段列表 */}
       <CardContent className="p-0">
+        {/* 表格详细备注输入区域 (位于 Header 和 字段列表 之间) */}
+        <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center gap-2">
+          <FileText size={14} className="text-slate-400 shrink-0" />
+          <Input
+            className="h-8 text-xs border-slate-200 bg-slate-50/50 focus-visible:ring-1 text-slate-600"
+            placeholder="在此输入数据库表详细备注 (Table Comment)..."
+            value={tableRemarks || ''}
+            onChange={(e) => {
+              if (onTableRemarkChange) {
+                onTableRemarkChange(tableName, e.target.value);
+              }
+            }}
+          />
+        </div>
+
         {/* 表头行 - 调整 grid 比例以容纳新列 */}
         <div className="grid grid-cols-[0.4fr_0.6fr_0.4fr_0.5fr_40px] gap-2 px-6 py-2 bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b">
           <div className="pl-2">原始字段</div>

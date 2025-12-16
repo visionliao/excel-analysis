@@ -1,528 +1,648 @@
 {
-  "apg_asset_data": [
-    { "original": "序号", "dbField": "seq_no", "comment": "序列号", "dataType": 2 },
-    { "original": "Vehicle/fund name", "dbField": "fund_name", "comment": "基金/载体名称", "dataType": 0 },
-    { "original": "Ownership share (%)", "dbField": "ownership_share", "comment": "持股比例", "dataType": 0 },
-    { "original": "Asset Name", "dbField": "asset_name", "comment": "资产名称", "dataType": 0 },
-    { "original": "Asset life cycle", "dbField": "asset_lifecycle", "comment": "资产生命周期", "dataType": 0 },
-    { "original": "Address 1", "dbField": "address", "comment": "地址", "dataType": 1 },
-    { "original": "Postal Code", "dbField": "postal_code", "comment": "邮政编码", "dataType": 0 },
-    { "original": "City name", "dbField": "city", "comment": "城市", "dataType": 0 },
-    { "original": "Country", "dbField": "country", "comment": "国家", "dataType": 0 },
-    { "original": "Gross floor area", "dbField": "gfa", "comment": "建筑面积", "dataType": 3 },
-    { "original": "Gross leasable Area", "dbField": "gla", "comment": "可租赁面积", "dataType": 3 },
-    { "original": "Net leasable area", "dbField": "nla", "comment": "净租赁面积", "dataType": 3 },
-    { "original": "Unit of area measurement", "dbField": "area_unit", "comment": "面积单位", "dataType": 0 },
-    { "original": "Asset Type", "dbField": "asset_type", "comment": "资产类型", "dataType": 0 },
-    { "original": "Asset Sub-Type", "dbField": "asset_subtype", "comment": "资产子类型", "dataType": 0 },
-    { "original": "Value", "dbField": "asset_value", "comment": "资产价值", "dataType": 3 },
-    { "original": "Value currency", "dbField": "currency", "comment": "币种", "dataType": 0 },
-    { "original": "Energy consumption - landlord controlled (kWh/yr)", "dbField": "energy_landlord", "comment": "房东控制能耗", "dataType": 3 },
-    { "original": "Energy consumption - tenant controlled (kWh/yr)", "dbField": "energy_tenant", "comment": "租户控制能耗", "dataType": 3 },
-    { "original": "Energy data coverage (% of area)", "dbField": "energy_coverage", "comment": "能耗数据覆盖率", "dataType": 0 },
-    { "original": "Total energy consumption (kWh/yr)", "dbField": "energy_total", "comment": "总能耗", "dataType": 3 },
-    { "original": "Energy intensity (kWh/area/yr)", "dbField": "energy_intensity", "comment": "能耗强度", "dataType": 3 },
-    { "original": "Generated and consumed on-site by landlord (kWh/yr)", "dbField": "energy_gen_landlord", "comment": "房东自产自用电量", "dataType": 3 },
-    { "original": "Generated on-site and exported by landlord (kWh/yr)", "dbField": "energy_export_landlord", "comment": "房东外输电量", "dataType": 3 },
-    { "original": "Generated and consumed on-site by third party or tenant", "dbField": "energy_gen_tenant", "comment": "第三方/租户自产自用", "dataType": 3 },
-    { "original": "Generated off-site and purchased by tenant (kWh/yr)", "dbField": "energy_purchased_tenant", "comment": "租户购买外部电量", "dataType": 3 },
-    { "original": "Non-Renewable Energy Production (kWh/yr)", "dbField": "energy_non_renewable", "comment": "非可再生能源产量", "dataType": 3 },
-    { "original": "Scope 1 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_1", "comment": "范围1排放量", "dataType": 3 },
-    { "original": "Scope 2 emissions - location based (tonne CO2e/yr)", "dbField": "emissions_scope_2_loc", "comment": "范围2排放(基于位置)", "dataType": 3 },
-    { "original": "Scope 2 emissions - market based (tonne", "dbField": "emissions_scope_2_mkt", "comment": "范围2排放(基于市场)", "dataType": 3 },
-    { "original": "Scope 3 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_3", "comment": "范围3排放量", "dataType": 3 },
-    { "original": "Total operational carbon - location based (tonne CO2e/yr)", "dbField": "carbon_total_loc", "comment": "总运营碳排放(位置)", "dataType": 3 },
-    { "original": "Total operational carbon - market based (tonne CO2e/yr)", "dbField": "carbon_total_mkt", "comment": "总运营碳排放(市场)", "dataType": 3 },
-    { "original": "Operational carbon intensity - location based (tonne CO2e/area/yr)", "dbField": "carbon_intensity_loc", "comment": "碳排放强度(位置)", "dataType": 3 },
-    { "original": "Operational carbon intensity - market based (tonne CO2e/area/yr)", "dbField": "carbon_intensity_mkt", "comment": "碳排放强度(市场)", "dataType": 3 },
-    { "original": "Asset exposed to fossil fuels (Yes/No)", "dbField": "fossil_fuel_exposure", "comment": "化石燃料暴露", "dataType": 0 },
-    { "original": "Scheme Level 1 (please select from the drop-down list)", "dbField": "cert_scheme_level", "comment": "认证等级", "dataType": 0 },
-    { "original": "Floor Area Covered 1 (area)", "dbField": "cert_area_covered", "comment": "认证覆盖面积", "dataType": 3 },
-    { "original": "Year Issued 1", "dbField": "cert_year_issued", "comment": "认证年份", "dataType": 2 }
-  ],
-  "ar_receivable_summary": [
-    { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住客姓名", "dataType": 0 },
-    { "original": "消费项目", "dbField": "charge_item", "comment": "消费项目", "dataType": 0 },
-    { "original": "业务账单期间", "dbField": "biz_period", "comment": "业务账期", "dataType": 0 },
-    { "original": "业务账单金额", "dbField": "biz_amount", "comment": "业务金额", "dataType": 3 },
-    { "original": "账单已收", "dbField": "collected_amount", "comment": "已收金额", "dataType": 3 },
-    { "original": "财务账单期间", "dbField": "fin_period", "comment": "财务账期", "dataType": 0 },
-    { "original": "财务账单金额", "dbField": "fin_amount", "comment": "财务金额", "dataType": 3 },
-    { "original": "财务已收", "dbField": "fin_collected", "comment": "财务已收", "dataType": 3 },
-    { "original": "余额", "dbField": "balance", "comment": "余额", "dataType": 3 }
-  ],
-  "pp_prepayment_summary": [
-    { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住客姓名", "dataType": 0 },
-    { "original": "消费项目", "dbField": "charge_item", "comment": "消费项目", "dataType": 0 },
-    { "original": "业务账单期间", "dbField": "biz_period", "comment": "业务账期", "dataType": 0 },
-    { "original": "账单金额", "dbField": "bill_amount", "comment": "账单金额", "dataType": 3 },
-    { "original": "账单已收", "dbField": "collected_amount", "comment": "已收金额", "dataType": 3 },
-    { "original": "预收期间", "dbField": "prepay_period", "comment": "预收期间", "dataType": 0 },
-    { "original": "预收金额", "dbField": "prepay_amount", "comment": "预收金额", "dataType": 3 }
-  ],
-  "monthly_rr_summary": [
-    { "original": "ID", "dbField": "row_id", "comment": "行ID", "dataType": 2 },
-    { "original": "Indicator", "dbField": "kpi_indicator", "comment": "指标名称", "dataType": 0 },
-    { "original": "2024/11", "dbField": "value_current", "comment": "当月数值", "dataType": 3 },
-    { "original": "2024/12", "dbField": "value_next", "comment": "次月数值", "dataType": 3 },
-    { "original": "null", "dbField": "value_future", "comment": "远期数值", "dataType": 3 }
-  ],
-  "performance_tracking": [
-    { "original": "Unit", "dbField": "unit_code", "comment": "单元代码", "dataType": 0 },
-    { "original": "Unit Type", "dbField": "unit_type", "comment": "单元类型", "dataType": 0 },
-    { "original": "2024/11", "dbField": "value_current", "comment": "当月数值", "dataType": 3 },
-    { "original": "2024/12", "dbField": "value_next", "comment": "次月数值", "dataType": 3 }
-  ],
-  "statistics_general": [
-    { "original": "统计月份", "dbField": "stat_month", "comment": "统计月份", "dataType": 0 },
-    { "original": "ID", "dbField": "stat_id", "comment": "统计项ID", "dataType": 2 },
-    { "original": "统计项", "dbField": "stat_name", "comment": "统计项名称", "dataType": 0 },
-    { "original": "数值", "dbField": "stat_value", "comment": "统计数值", "dataType": 3 }
-  ],
-  "vehicle_data_esg": [
-    { "original": "序号", "dbField": "seq_no", "comment": "序号", "dataType": 0 },
-    { "original": "ESG Vehicle - KPI requested or calculated", "dbField": "kpi_name", "comment": "ESG指标名称", "dataType": 0 },
-    { "original": "Data", "dbField": "kpi_value", "comment": "指标数值", "dataType": 0 }
-  ],
-  "lease_expiration_schedule": [
-    { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "租户状态", "dbField": "resident_status", "comment": "租户状态", "dataType": 0 },
-    { "original": "提议过期日", "dbField": "proposal_expiry_date", "comment": "提议过期日", "dataType": 5 },
-    { "original": "市场租金", "dbField": "market_rent", "comment": "市场租金", "dataType": 3 },
-    { "original": "面积", "dbField": "area_sqft", "comment": "面积(sqft)", "dataType": 3 },
-    { "original": "参考租金", "dbField": "sec_deposit_on_hand", "comment": "参考租金", "dataType": 3 },
-    { "original": "租户代码", "dbField": "resident_code", "comment": "租户代码", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "租户姓名", "dataType": 0 },
-    { "original": "实际租金", "dbField": "actual_rent", "comment": "实际租金", "dataType": 3 },
-    { "original": "租赁开始时间", "dbField": "lease_start_date", "comment": "起租日", "dataType": 5 },
-    { "original": "租赁结束时间", "dbField": "lease_end_date", "comment": "终租日", "dataType": 5 },
-    { "original": "搬出时间", "dbField": "move_out_date", "comment": "搬出日", "dataType": 5 },
-    { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 }
-  ],
-  "room_details": [
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "楼栋", "dbField": "building_no", "comment": "楼栋", "dataType": 0 },
-    { "original": "楼层", "dbField": "floor", "comment": "楼层", "dataType": 2 },
-    { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
-    { "original": "户型代码", "dbField": "layout_code", "comment": "户型代码", "dataType": 0 },
-    { "original": "面积(平方米)", "dbField": "area_sqm", "comment": "面积(平米)", "dataType": 3 },
-    { "original": "朝向", "dbField": "orientation", "comment": "朝向", "dataType": 0 },
-    { "original": "12个月租金", "dbField": "rent_12_months", "comment": "12个月租金报价", "dataType": 3 },
-    { "original": "6-11个月租金", "dbField": "rent_6_11_months", "comment": "6-11个月租金报价", "dataType": 3 },
-    { "original": "2-5个月租金", "dbField": "rent_2_5_months", "comment": "2-5个月租金报价", "dataType": 3 },
-    { "original": "1个月租金", "dbField": "rent_1_month", "comment": "1个月租金报价", "dataType": 3 }
-  ],
-  "face_registration": [
-    { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "名称 Name", "dbField": "resident_name", "comment": "租户姓名", "dataType": 0 },
-    { "original": "操作类型 Log_Type", "dbField": "log_type", "comment": "操作类型", "dataType": 0 },
-    { "original": "绿云发送 GC_Send", "dbField": "pms_send_status", "comment": "PMS发送状态", "dataType": 0 },
-    { "original": "备注 MEMO", "dbField": "memo", "comment": "备注", "dataType": 1 },
-    { "original": "创建人 Create_user", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
-    { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 }
-  ],
-  "room_master_list": [
-    { "original": "楼号", "dbField": "building_no", "comment": "楼栋号", "dataType": 0 },
-    { "original": "楼层", "dbField": "floor", "comment": "楼层", "dataType": 2 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
-    { "original": "租金", "dbField": "std_rent", "comment": "标准租金", "dataType": 3 },
-    { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
-    { "original": "房号信息", "dbField": "room_info", "comment": "房号信息", "dataType": 1 }
-  ],
-  "allowance_balance_current": [
-    { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
-    { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "津贴总额 Allowance", "dbField": "allowance_total", "comment": "津贴总额", "dataType": 3 },
-    { "original": "津贴使用额 Allowance Use", "dbField": "allowance_used", "comment": "津贴使用额", "dataType": 3 },
-    { "original": "津贴当期余额 Allowance Balance", "dbField": "allowance_balance", "comment": "津贴余额", "dataType": 3 },
-    { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
-    { "original": "津贴生效时间 Allowance Datetime", "dbField": "effective_time", "comment": "津贴生效时间", "dataType": 6 }
-  ],
-  "tenant_renewal_stats": [
-    { "original": "类型", "dbField": "stat_type", "comment": "统计类型", "dataType": 0 },
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "姓名", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房价", "dbField": "room_rate", "comment": "房价", "dataType": 3 },
-    { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
-    { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
-    { "original": "续租次数", "dbField": "renewal_count", "comment": "续租次数", "dataType": 2 }
-  ],
-  "posting_detail_fee_code": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
-    { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
-    { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
-    { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
-    { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
-    { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
-    { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 }
-  ],
-  "bill_allowance_deduction": [
-    { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
-    { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
-    { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
-    { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
-    { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
-    { "original": "应收 AR", "dbField": "ar_amount", "comment": "应收金额", "dataType": 3 },
-    { "original": "津贴抵扣 Allowance", "dbField": "deducted_amount", "comment": "抵扣金额", "dataType": 3 },
-    { "original": "剩余金额 Balance", "dbField": "remaining_balance", "comment": "剩余金额", "dataType": 3 }
-  ],
-  "posting_detail_tax_sep": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
-    { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
-    { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
-    { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
-    { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
-    { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
-    { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
-    { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
-    { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
-    { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
-    { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
-    { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
-  ],
-  "posting_summary_tax_sep": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
-    { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
-    { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
-    { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
-    { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
-    { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
-    { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
-    { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
-    { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
-    { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
-    { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
-    { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
-  ],
-  "contract_creation_log": [
-    { "original": "合同号", "dbField": "contract_no", "comment": "合同号", "dataType": 0 },
-    { "original": "客人姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "实际月租", "dbField": "actual_monthly_rent", "comment": "实际月租", "dataType": 3 },
-    { "original": "渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
-    { "original": "坪效", "dbField": "rent_per_sqm", "comment": "坪效", "dataType": 3 },
-    { "original": "入住日期", "dbField": "check_in_date", "comment": "入住日期", "dataType": 5 },
-    { "original": "退房日期", "dbField": "check_out_date", "comment": "退房日期", "dataType": 5 },
-    { "original": "入住天数", "dbField": "stay_days", "comment": "入住天数", "dataType": 2 },
-    { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
-    { "original": "创建用户", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
-    { "original": "公司佣金", "dbField": "company_commission", "comment": "公司佣金", "dataType": 3 },
-    { "original": "个人佣金", "dbField": "personal_commission", "comment": "个人佣金", "dataType": 3 }
-  ],
-  "resident_birthday_list": [
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "生日", "dbField": "birthday", "comment": "住户生日", "dataType": 5 },
-    { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
-    { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
-    { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
-  ],
-  "contract_unsigned_active": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "状态", "dataType": 0 },
-    { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
-    { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 }
-  ],
-  "departure_followup_log": [
-    { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "租户状态", "dbField": "tenant_status", "comment": "租户状态", "dataType": 0 },
-    { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 },
-    { "original": "跟进日期", "dbField": "follow_up_date", "comment": "跟进日期", "dataType": 5 },
-    { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
-    { "original": "押金", "dbField": "deposit", "comment": "押金", "dataType": 3 },
-    { "original": "租户代码", "dbField": "resident_code", "comment": "租户代码", "dataType": 0 },
-    { "original": "STA", "dbField": "sta_status", "comment": "在住状态", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "实际租金", "dbField": "actual_rent", "comment": "实际租金", "dataType": 3 },
-    { "original": "租赁开始时间", "dbField": "lease_start_date", "comment": "起租日", "dataType": 5 },
-    { "original": "租赁结束时间", "dbField": "lease_end_date", "comment": "终租日", "dataType": 5 },
-    { "original": "搬出时间", "dbField": "move_out_date", "comment": "搬出日", "dataType": 5 },
-    { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 }
-  ],
-  "resident_id_document_list": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
-    { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "国籍", "dbField": "nationality", "comment": "国籍", "dataType": 0 },
-    { "original": "证件类型", "dbField": "id_type", "comment": "证件类型", "dataType": 0 },
-    { "original": "证件号", "dbField": "id_number", "comment": "证件号码", "dataType": 0 },
-    { "original": "家庭住址", "dbField": "home_address", "comment": "家庭住址", "dataType": 0 },
-    { "original": "手机号", "dbField": "mobile", "comment": "手机号", "dataType": 0 }
-  ],
-  "arrival_departure_weekly": [
-    { "original": "状态", "dbField": "status", "comment": "状态", "dataType": 0 },
-    { "original": "类别", "dbField": "category", "comment": "类别", "dataType": 0 },
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房数", "dbField": "room_count", "comment": "房数", "dataType": 2 },
-    { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "手机", "dbField": "mobile", "comment": "手机", "dataType": 0 },
-    { "original": "证件号", "dbField": "id_number", "comment": "证件号", "dataType": 0 },
-    { "original": "公司/旅行社/订房中心", "dbField": "company_agency", "comment": "来源机构", "dataType": 0 },
-    { "original": "到达日期", "dbField": "arrival_date", "comment": "到达日期", "dataType": 6 },
-    { "original": "离开日期", "dbField": "departure_date", "comment": "离开日期", "dataType": 6 },
-    { "original": "房价", "dbField": "room_rate", "comment": "房价", "dataType": 3 },
-    { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
-  ],
-  "daily_departure_report": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房数", "dbField": "room_count", "comment": "房数", "dataType": 2 },
-    { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "预定人", "dbField": "booker_name", "comment": "预订人", "dataType": 0 },
-    { "original": "公司/旅行社/订房中心", "dbField": "company_agency", "comment": "来源机构", "dataType": 0 },
-    { "original": "到达日期", "dbField": "arrival_date", "comment": "到达日期", "dataType": 6 },
-    { "original": "离开日期", "dbField": "departure_date", "comment": "离开日期", "dataType": 6 },
-    { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
-  ],
-  "account_aging_analysis": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "名称", "dbField": "item_name", "comment": "项目名称", "dataType": 0 },
-    { "original": "0-30天-其他场地租赁费", "dbField": "aging_0_30_rent", "comment": "0-30天场地租赁", "dataType": 3 },
-    { "original": "0-30天-微信-UPG", "dbField": "aging_0_30_wechat", "comment": "0-30天微信", "dataType": 3 },
-    { "original": "0-30天-支付宝-UPG", "dbField": "aging_0_30_alipay", "comment": "0-30天支付宝", "dataType": 3 },
-    { "original": "0-30天-银行转账", "dbField": "aging_0_30_bank", "comment": "0-30天银行转账", "dataType": 3 },
-    { "original": "0-30天-账龄小计", "dbField": "aging_0_30_subtotal", "comment": "0-30天小计", "dataType": 3 },
-    { "original": "30-60天-银行转账", "dbField": "aging_30_60_bank", "comment": "30-60天银行转账", "dataType": 3 },
-    { "original": "30-60天-账龄小计", "dbField": "aging_30_60_subtotal", "comment": "30-60天小计", "dataType": 3 },
-    { "original": "90天+-银行转账", "dbField": "aging_90_plus_bank", "comment": "90天+银行转账", "dataType": 3 },
-    { "original": "90天+-账龄小计", "dbField": "aging_90_plus_subtotal", "comment": "90天+小计", "dataType": 3 },
-    { "original": "账龄合计", "dbField": "aging_total", "comment": "账龄合计", "dataType": 3 }
-  ],
-  "tenant_profile_demographics": [
-    { "original": "统计年份", "dbField": "stat_year", "comment": "统计年份", "dataType": 2 },
-    { "original": "年龄", "dbField": "age_group", "comment": "年龄段", "dataType": 0 },
-    { "original": "性别", "dbField": "gender", "comment": "性别", "dataType": 0 },
-    { "original": "数量", "dbField": "head_count", "comment": "人数", "dataType": 2 }
-  ],
-  "rent_revenue_recognition": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
-    { "original": "户型", "dbField": "room_code", "comment": "户型代码", "dataType": 0 },
-    { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
-    { "original": "渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
-    { "original": "市场码", "dbField": "market_code", "comment": "市场码", "dataType": 0 },
-    { "original": "租期", "dbField": "lease_term", "comment": "租期", "dataType": 2 },
-    { "original": "租赁单元", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "客户名称", "dbField": "resident_name", "comment": "住户名称", "dataType": 0 },
-    { "original": "销售顾问", "dbField": "sales_consultant", "comment": "销售顾问", "dataType": 0 },
-    { "original": "中介公司", "dbField": "agency_company", "comment": "中介公司", "dataType": 0 },
-    { "original": "合同开始时间", "dbField": "contract_start", "comment": "合同开始", "dataType": 5 },
-    { "original": "合同到期时间", "dbField": "contract_end", "comment": "合同到期", "dataType": 5 },
-    { "original": "当月开始", "dbField": "month_start", "comment": "当月计费开始", "dataType": 5 },
-    { "original": "当月到期", "dbField": "month_end", "comment": "当月计费结束", "dataType": 5 },
-    { "original": "月租金（面价）", "dbField": "monthly_rent_face", "comment": "月租金(面价)", "dataType": 3 },
-    { "original": "物管费", "dbField": "mgmt_fee", "comment": "物管费", "dataType": 3 },
-    { "original": "去税物管费", "dbField": "mgmt_fee_excl_tax", "comment": "去税物管费", "dataType": 3 },
-    { "original": "纯租金", "dbField": "net_rent", "comment": "纯租金", "dataType": 3 },
-    { "original": "去税纯租金", "dbField": "net_rent_excl_tax", "comment": "去税纯租金", "dataType": 3 },
-    { "original": "去税面价", "dbField": "face_rent_excl_tax", "comment": "去税面价", "dataType": 3 },
-    { "original": "当月入住天数", "dbField": "stay_days", "comment": "当月入住天数", "dataType": 2 },
-    { "original": "当月租金(面价)", "dbField": "curr_rent_face", "comment": "当月租金(面价)", "dataType": 3 },
-    { "original": "当月纯租金", "dbField": "curr_net_rent", "comment": "当月纯租金", "dataType": 3 },
-    { "original": "当月去税租金", "dbField": "curr_rent_excl_tax", "comment": "当月去税租金", "dataType": 3 },
-    { "original": "当月物管费", "dbField": "curr_mgmt_fee", "comment": "当月物管费", "dataType": 3 },
-    { "original": "当月去税物管费", "dbField": "curr_mgmt_fee_excl_tax", "comment": "当月去税物管费", "dataType": 3 },
-    { "original": "当月实际去税面价", "dbField": "curr_actual_face_excl_tax", "comment": "当月实际去税面价", "dataType": 3 }
-  ],
-  "energy_consumption_stats": [
-    { "original": "项目", "dbField": "item_name", "comment": "能耗项目", "dataType": 0 },
-    { "original": "数量", "dbField": "quantity", "comment": "数量", "dataType": 3 },
-    { "original": "单价", "dbField": "unit_price", "comment": "单价", "dataType": 3 },
-    { "original": "金额", "dbField": "total_amount", "comment": "金额", "dataType": 3 }
-  ],
-  "ar_aging_resident": [
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 },
-    { "original": "停车费", "dbField": "fee_parking", "comment": "停车费", "dataType": 3 },
-    { "original": "其他收入", "dbField": "fee_other", "comment": "其他收入", "dataType": 3 },
-    { "original": "冷水费", "dbField": "fee_water_cold", "comment": "冷水费", "dataType": 3 },
-    { "original": "卡拉OK使用费", "dbField": "fee_karaoke", "comment": "卡拉OK费", "dataType": 3 },
-    { "original": "宠物租金", "dbField": "fee_pet", "comment": "宠物租金", "dataType": 3 },
-    { "original": "房卡", "dbField": "fee_keycard", "comment": "房卡费", "dataType": 3 },
-    { "original": "房间清扫服务费", "dbField": "fee_cleaning", "comment": "清扫费", "dataType": 3 },
-    { "original": "损坏赔偿费", "dbField": "fee_damage", "comment": "赔偿费", "dataType": 3 },
-    { "original": "桶水费", "dbField": "fee_water_barrel", "comment": "桶水费", "dataType": 3 },
-    { "original": "洗衣服务费", "dbField": "fee_laundry", "comment": "洗衣费", "dataType": 3 },
-    { "original": "滞纳金-房租", "dbField": "fee_late_rent", "comment": "房租滞纳金", "dataType": 3 },
-    { "original": "热水费", "dbField": "fee_water_hot", "comment": "热水费", "dataType": 3 },
-    { "original": "物业费", "dbField": "fee_property_mgmt", "comment": "物业费", "dataType": 3 },
-    { "original": "物品租赁费", "dbField": "fee_item_rental", "comment": "物品租赁费", "dataType": 3 },
-    { "original": "电费", "dbField": "fee_electricity", "comment": "电费", "dataType": 3 },
-    { "original": "租金", "dbField": "fee_rent", "comment": "租金", "dataType": 3 },
-    { "original": "空调费", "dbField": "fee_ac", "comment": "空调费", "dataType": 3 },
-    { "original": "账龄小计", "dbField": "aging_subtotal", "comment": "小计", "dataType": 3 },
-    { "original": "账龄合计", "dbField": "aging_total", "comment": "合计", "dataType": 3 }
-  ],
-  "deposit_balance_realtime": [
-    { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "预订人", "dbField": "booker_name", "comment": "预订人", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "协议公司", "dbField": "company", "comment": "协议公司", "dataType": 0 },
-    { "original": "应付押金", "dbField": "deposit_payable", "comment": "应付押金", "dataType": 3 },
-    { "original": "已付押金", "dbField": "deposit_paid", "comment": "已付押金", "dataType": 3 },
-    { "original": "结转金", "dbField": "deposit_transferred", "comment": "结转金", "dataType": 3 }
-  ],
-  "deposit_collection_detail": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
-    { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
-    { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
-    { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
-    { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
-    { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
-    { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
-    { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
-    { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
-    { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
-    { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
-  ],
-  "tenant_analysis_report": [
-    { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
-    { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "生日", "dbField": "birthday", "comment": "生日", "dataType": 5 },
-    { "original": "性别", "dbField": "gender", "comment": "性别", "dataType": 0 },
-    { "original": "年龄", "dbField": "age", "comment": "年龄", "dataType": 2 },
-    { "original": "国籍", "dbField": "nationality", "comment": "国籍", "dataType": 0 },
-    { "original": "是否携带宠物", "dbField": "has_pet", "comment": "是否带宠物", "dataType": 0 },
-    { "original": "单人or家庭", "dbField": "occupancy_type", "comment": "入住类型", "dataType": 0 },
-    { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
-    { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
-    { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
-  ],
-  "viewing_appointment_list": [
-    { "original": "来源", "dbField": "source", "comment": "来源", "dataType": 0 },
-    { "original": "资源编号", "dbField": "resource_id", "comment": "资源编号", "dataType": 0 },
-    { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "客人姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "手机", "dbField": "mobile", "comment": "手机", "dataType": 0 },
-    { "original": "邮箱", "dbField": "email", "comment": "邮箱", "dataType": 0 },
-    { "original": "客人数", "dbField": "resident_count", "comment": "客人数", "dataType": 2 },
-    { "original": "预约时间", "dbField": "appointment_time", "comment": "预约时间", "dataType": 5 },
-    { "original": "预约时段", "dbField": "appointment_slot", "comment": "预约时段", "dataType": 0 },
-    { "original": "租客意向", "dbField": "intention", "comment": "意向", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
-    { "original": "带看时间", "dbField": "visit_time", "comment": "带看时间", "dataType": 5 },
-    { "original": "带看时段", "dbField": "visit_slot", "comment": "带看时段", "dataType": 0 },
-    { "original": "跟进人", "dbField": "follower", "comment": "跟进人", "dataType": 0 },
-    { "original": "反馈备注", "dbField": "feedback", "comment": "反馈", "dataType": 1 },
-    { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "锁定ID", "dbField": "lock_id", "comment": "锁定ID", "dataType": 0 },
-    { "original": "锁定状态", "dbField": "lock_status", "comment": "锁定状态", "dataType": 0 },
-    { "original": "锁定时间", "dbField": "lock_time", "comment": "锁定时间", "dataType": 6 },
-    { "original": "锁定到期时间", "dbField": "lock_expire_time", "comment": "锁定到期", "dataType": 6 },
-    { "original": "锁定房价", "dbField": "lock_price", "comment": "锁定房价", "dataType": 3 },
-    { "original": "锁定押金", "dbField": "lock_deposit", "comment": "锁定押金", "dataType": 3 },
-    { "original": "押金状态", "dbField": "deposit_status", "comment": "押金状态", "dataType": 0 },
-    { "original": "转预定账号", "dbField": "transfer_account", "comment": "转预定账号", "dataType": 0 },
-    { "original": "转预定订单号", "dbField": "transfer_order", "comment": "转预定订单", "dataType": 0 },
-    { "original": "创建人", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
-    { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
-    { "original": "修改人", "dbField": "updated_by", "comment": "修改人", "dataType": 0 },
-    { "original": "修改时间", "dbField": "updated_at", "comment": "修改时间", "dataType": 6 }
-  ],
-  "resident_ledger_report": [
-    { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
-    { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "付款方式 Pay Code", "dbField": "payment_method", "comment": "付款方式", "dataType": 0 },
-    { "original": "付款金额 Pay Amount", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
-    { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
-    { "original": "费用金额 Charge Amount", "dbField": "charge_amount", "comment": "费用金额", "dataType": 3 },
-    { "original": "单据号 No", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
-    { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
-    { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
-    { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 }
-  ],
-  "bill_detail_resident": [
-    { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
-    { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
-    { "original": "入账时间 Gen Date", "dbField": "generation_date", "comment": "入账时间", "dataType": 6 },
-    { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
-    { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
-    { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
-    { "original": "应收 AR", "dbField": "ar_amount", "comment": "应收金额", "dataType": 3 },
-    { "original": "津贴抵扣 Allowance", "dbField": "allowance_deducted", "comment": "津贴抵扣", "dataType": 3 },
-    { "original": "剩余金额 Balance", "dbField": "balance", "comment": "剩余金额", "dataType": 3 },
-    { "original": "创建用户 Create User", "dbField": "created_by", "comment": "创建人", "dataType": 0 }
-  ],
-  "work_orders": [
-    { "original": "数据来源", "dbField": "data_source", "comment": "数据来源", "dataType": 0 },
-    { "original": "工单编号", "dbField": "work_order_no", "comment": "工单编号", "dataType": 0 },
-    { "original": "工单类型", "dbField": "order_type", "comment": "工单类型", "dataType": 0 },
-    { "original": "区域", "dbField": "area", "comment": "所属区域", "dataType": 0 },
-    { "original": "位置", "dbField": "location", "comment": "具体位置", "dataType": 0 },
-    { "original": "服务项目", "dbField": "service_item", "comment": "服务内容", "dataType": 0 },
-    { "original": "公寓", "dbField": "apartment", "comment": "公寓名称", "dataType": 0 },
-    { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
-    { "original": "申请人", "dbField": "applicant", "comment": "申请人", "dataType": 0 },
-    { "original": "联系方式", "dbField": "contact_info", "comment": "联系电话", "dataType": 0 },
-    { "original": "预计上门日期", "dbField": "expected_visit_date", "comment": "预计日期", "dataType": 5 },
-    { "original": "预计上门时间", "dbField": "expected_visit_time", "comment": "预计时间", "dataType": 0 },
-    { "original": "PMS单号", "dbField": "pms_order_no", "comment": "PMS关联单号", "dataType": 0 },
-    { "original": "状态", "dbField": "status", "comment": "工单状态", "dataType": 0 },
-    { "original": "创建人", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
-    { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
-    { "original": "更新人", "dbField": "updated_by", "comment": "更新人", "dataType": 0 },
-    { "original": "更新时间", "dbField": "updated_at", "comment": "更新时间", "dataType": 6 }
-  ],
-  "dim_room_type": [
-    { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
-    { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
-    { "original": "面积", "dbField": "area_sqm", "comment": "面积(平米)", "dataType": 3 },
-    { "original": "房间数量", "dbField": "room_count", "comment": "房间数量", "dataType": 2 }
-  ],
-  "dim_status_map": [
-    { "original": "房间状态", "dbField": "status", "comment": "房间状态", "dataType": 0 },
-    { "original": "状态描述", "dbField": "status_desc", "comment": "状态描述", "dataType": 0 }
-  ],
-  "dim_work_order_items": [
-    { "original": "服务项目代码", "dbField": "item_code", "comment": "服务项目代码", "dataType": 0 },
-    { "original": "服务项目描述", "dbField": "item_desc", "comment": "服务项目描述", "dataType": 0 }
-  ],
-  "dim_work_locations": [
-    { "original": "作业区域代码", "dbField": "location_code", "comment": "作业区域代码", "dataType": 0 },
-    { "original": "作业区域描述", "dbField": "location_desc", "comment": "作业区域描述", "dataType": 0 }
-  ]
+  "apg_asset_data": {
+    "tableRemarks": "APG 资产数据详情表，记录资产的基础信息、估值、能耗、碳排放及环保认证等 ESG 相关数据。",
+    "columns": [
+      { "original": "序号", "dbField": "seq_no", "comment": "序列号", "dataType": 2 },
+      { "original": "Vehicle/fund name", "dbField": "fund_name", "comment": "基金/载体名称", "dataType": 0 },
+      { "original": "Ownership share (%)", "dbField": "ownership_share", "comment": "持股比例", "dataType": 0 },
+      { "original": "Asset Name", "dbField": "asset_name", "comment": "资产名称", "dataType": 0 },
+      { "original": "Asset life cycle", "dbField": "asset_lifecycle", "comment": "资产生命周期", "dataType": 0 },
+      { "original": "Address 1", "dbField": "address", "comment": "地址", "dataType": 1 },
+      { "original": "Postal Code", "dbField": "postal_code", "comment": "邮政编码", "dataType": 0 },
+      { "original": "City name", "dbField": "city", "comment": "城市", "dataType": 0 },
+      { "original": "Country", "dbField": "country", "comment": "国家", "dataType": 0 },
+      { "original": "Gross floor area", "dbField": "gfa", "comment": "建筑面积", "dataType": 3 },
+      { "original": "Gross leasable Area", "dbField": "gla", "comment": "可租赁面积", "dataType": 3 },
+      { "original": "Net leasable area", "dbField": "nla", "comment": "净租赁面积", "dataType": 3 },
+      { "original": "Unit of area measurement", "dbField": "area_unit", "comment": "面积单位", "dataType": 0 },
+      { "original": "Asset Type", "dbField": "asset_type", "comment": "资产类型", "dataType": 0 },
+      { "original": "Asset Sub-Type", "dbField": "asset_subtype", "comment": "资产子类型", "dataType": 0 },
+      { "original": "Value", "dbField": "asset_value", "comment": "资产价值", "dataType": 3 },
+      { "original": "Value currency", "dbField": "currency", "comment": "币种", "dataType": 0 },
+      { "original": "Energy consumption - landlord controlled (kWh/yr)", "dbField": "energy_landlord", "comment": "房东控制能耗", "dataType": 3 },
+      { "original": "Energy consumption - tenant controlled (kWh/yr)", "dbField": "energy_tenant", "comment": "租户控制能耗", "dataType": 3 },
+      { "original": "Energy data coverage (% of area)", "dbField": "energy_coverage", "comment": "能耗数据覆盖率", "dataType": 0 },
+      { "original": "Total energy consumption (kWh/yr)", "dbField": "energy_total", "comment": "总能耗", "dataType": 3 },
+      { "original": "Energy intensity (kWh/area/yr)", "dbField": "energy_intensity", "comment": "能耗强度", "dataType": 3 },
+      { "original": "Generated and consumed on-site by landlord (kWh/yr)", "dbField": "energy_gen_landlord", "comment": "房东自产自用电量", "dataType": 3 },
+      { "original": "Generated on-site and exported by landlord (kWh/yr)", "dbField": "energy_export_landlord", "comment": "房东外输电量", "dataType": 3 },
+      { "original": "Generated and consumed on-site by third party or tenant", "dbField": "energy_gen_tenant", "comment": "第三方/租户自产自用", "dataType": 3 },
+      { "original": "Generated off-site and purchased by tenant (kWh/yr)", "dbField": "energy_purchased_tenant", "comment": "租户购买外部电量", "dataType": 3 },
+      { "original": "Non-Renewable Energy Production (kWh/yr)", "dbField": "energy_non_renewable", "comment": "非可再生能源产量", "dataType": 3 },
+      { "original": "Scope 1 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_1", "comment": "范围1排放量", "dataType": 3 },
+      { "original": "Scope 2 emissions - location based (tonne CO2e/yr)", "dbField": "emissions_scope_2_loc", "comment": "范围2排放(基于位置)", "dataType": 3 },
+      { "original": "Scope 2 emissions - market based (tonne", "dbField": "emissions_scope_2_mkt", "comment": "范围2排放(基于市场)", "dataType": 3 },
+      { "original": "Scope 3 emissions (tonne CO2e/yr)", "dbField": "emissions_scope_3", "comment": "范围3排放量", "dataType": 3 },
+      { "original": "Total operational carbon - location based (tonne CO2e/yr)", "dbField": "carbon_total_loc", "comment": "总运营碳排放(位置)", "dataType": 3 },
+      { "original": "Total operational carbon - market based (tonne CO2e/yr)", "dbField": "carbon_total_mkt", "comment": "总运营碳排放(市场)", "dataType": 3 },
+      { "original": "Operational carbon intensity - location based (tonne CO2e/area/yr)", "dbField": "carbon_intensity_loc", "comment": "碳排放强度(位置)", "dataType": 3 },
+      { "original": "Operational carbon intensity - market based (tonne CO2e/area/yr)", "dbField": "carbon_intensity_mkt", "comment": "碳排放强度(市场)", "dataType": 3 },
+      { "original": "Asset exposed to fossil fuels (Yes/No)", "dbField": "fossil_fuel_exposure", "comment": "化石燃料暴露", "dataType": 0 },
+      { "original": "Scheme Level 1 (please select from the drop-down list)", "dbField": "cert_scheme_level", "comment": "认证等级", "dataType": 0 },
+      { "original": "Floor Area Covered 1 (area)", "dbField": "cert_area_covered", "comment": "认证覆盖面积", "dataType": 3 },
+      { "original": "Year Issued 1", "dbField": "cert_year_issued", "comment": "认证年份", "dataType": 2 }
+    ]
+  },
+  "ar_receivable_summary": {
+    "tableRemarks": "AR 财务应收汇总表，汇总统计每个租客的业务账单、财务账单及已收金额，用于应收账款对账。",
+    "columns": [
+      { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住客姓名", "dataType": 0 },
+      { "original": "消费项目", "dbField": "charge_item", "comment": "消费项目", "dataType": 0 },
+      { "original": "业务账单期间", "dbField": "biz_period", "comment": "业务账期", "dataType": 0 },
+      { "original": "业务账单金额", "dbField": "biz_amount", "comment": "业务金额", "dataType": 3 },
+      { "original": "账单已收", "dbField": "collected_amount", "comment": "已收金额", "dataType": 3 },
+      { "original": "财务账单期间", "dbField": "fin_period", "comment": "财务账期", "dataType": 0 },
+      { "original": "财务账单金额", "dbField": "fin_amount", "comment": "财务金额", "dataType": 3 },
+      { "original": "财务已收", "dbField": "fin_collected", "comment": "财务已收", "dataType": 3 },
+      { "original": "余额", "dbField": "balance", "comment": "余额", "dataType": 3 }
+    ]
+  },
+  "pp_prepayment_summary": {
+    "tableRemarks": "PP 财务预收汇总表，统计租客的预收账款信息，包含预收期间及预收金额详情。",
+    "columns": [
+      { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住客姓名", "dataType": 0 },
+      { "original": "消费项目", "dbField": "charge_item", "comment": "消费项目", "dataType": 0 },
+      { "original": "业务账单期间", "dbField": "biz_period", "comment": "业务账期", "dataType": 0 },
+      { "original": "账单金额", "dbField": "bill_amount", "comment": "账单金额", "dataType": 3 },
+      { "original": "账单已收", "dbField": "collected_amount", "comment": "已收金额", "dataType": 3 },
+      { "original": "预收期间", "dbField": "prepay_period", "comment": "预收期间", "dataType": 0 },
+      { "original": "预收金额", "dbField": "prepay_amount", "comment": "预收金额", "dataType": 3 }
+    ]
+  },
+  "monthly_rr_summary": {
+    "tableRemarks": "月度 RR (Rent Roll) 汇总表，按月度统计各项 KPI 指标（如收入、出租率等）的当前、次月及远期预测数值。",
+    "columns": [
+      { "original": "ID", "dbField": "row_id", "comment": "行ID", "dataType": 2 },
+      { "original": "Indicator", "dbField": "kpi_indicator", "comment": "指标名称", "dataType": 0 },
+      { "original": "2024/11", "dbField": "value_current", "comment": "当月数值", "dataType": 3 },
+      { "original": "2024/12", "dbField": "value_next", "comment": "次月数值", "dataType": 3 },
+      { "original": "null", "dbField": "value_future", "comment": "远期数值", "dataType": 3 }
+    ]
+  },
+  "performance_tracking": {
+    "tableRemarks": "绩效追踪报表，跟踪不同单元类型（Unit Type）的月度绩效表现及数值统计。",
+    "columns": [
+      { "original": "Unit", "dbField": "unit_code", "comment": "单元代码", "dataType": 0 },
+      { "original": "Unit Type", "dbField": "unit_type", "comment": "单元类型", "dataType": 0 },
+      { "original": "2024/11", "dbField": "value_current", "comment": "当月数值", "dataType": 3 },
+      { "original": "2024/12", "dbField": "value_next", "comment": "次月数值", "dataType": 3 }
+    ]
+  },
+  "statistics_general": {
+    "tableRemarks": "综合统计报表，按月份汇总各项通用统计指标的数值。",
+    "columns": [
+      { "original": "统计月份", "dbField": "stat_month", "comment": "统计月份", "dataType": 0 },
+      { "original": "ID", "dbField": "stat_id", "comment": "统计项ID", "dataType": 2 },
+      { "original": "统计项", "dbField": "stat_name", "comment": "统计项名称", "dataType": 0 },
+      { "original": "数值", "dbField": "stat_value", "comment": "统计数值", "dataType": 3 }
+    ]
+  },
+  "vehicle_data_esg": {
+    "tableRemarks": "ESG 载体层级数据表，记录与 ESG 报告相关的载体（Vehicle）层级 KPI 指标及数值。",
+    "columns": [
+      { "original": "序号", "dbField": "seq_no", "comment": "序号", "dataType": 0 },
+      { "original": "ESG Vehicle - KPI requested or calculated", "dbField": "kpi_name", "comment": "ESG指标名称", "dataType": 0 },
+      { "original": "Data", "dbField": "kpi_value", "comment": "指标数值", "dataType": 0 }
+    ]
+  },
+  "lease_expiration_schedule": {
+    "tableRemarks": "租约到期计划表，监控租客的租约状态、到期时间、市场租金及实际租金，用于续租管理。",
+    "columns": [
+      { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "租户状态", "dbField": "resident_status", "comment": "租户状态", "dataType": 0 },
+      { "original": "提议过期日", "dbField": "proposal_expiry_date", "comment": "提议过期日", "dataType": 5 },
+      { "original": "市场租金", "dbField": "market_rent", "comment": "市场租金", "dataType": 3 },
+      { "original": "面积", "dbField": "area_sqft", "comment": "面积(sqft)", "dataType": 3 },
+      { "original": "参考租金", "dbField": "sec_deposit_on_hand", "comment": "参考租金", "dataType": 3 },
+      { "original": "租户代码", "dbField": "resident_code", "comment": "租户代码", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "租户姓名", "dataType": 0 },
+      { "original": "实际租金", "dbField": "actual_rent", "comment": "实际租金", "dataType": 3 },
+      { "original": "租赁开始时间", "dbField": "lease_start_date", "comment": "起租日", "dataType": 5 },
+      { "original": "租赁结束时间", "dbField": "lease_end_date", "comment": "终租日", "dataType": 5 },
+      { "original": "搬出时间", "dbField": "move_out_date", "comment": "搬出日", "dataType": 5 },
+      { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 }
+    ]
+  },
+  "room_details": {
+    "tableRemarks": "房间详情基础表，记录所有房间的基础物理信息，包括楼栋、楼层、户型、面积及各租期报价。",
+    "columns": [
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "楼栋", "dbField": "building_no", "comment": "楼栋", "dataType": 0 },
+      { "original": "楼层", "dbField": "floor", "comment": "楼层", "dataType": 2 },
+      { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
+      { "original": "户型代码", "dbField": "layout_code", "comment": "户型代码", "dataType": 0 },
+      { "original": "面积(平方米)", "dbField": "area_sqm", "comment": "面积(平米)", "dataType": 3 },
+      { "original": "朝向", "dbField": "orientation", "comment": "朝向", "dataType": 0 },
+      { "original": "12个月租金", "dbField": "rent_12_months", "comment": "12个月租金报价", "dataType": 3 },
+      { "original": "6-11个月租金", "dbField": "rent_6_11_months", "comment": "6-11个月租金报价", "dataType": 3 },
+      { "original": "2-5个月租金", "dbField": "rent_2_5_months", "comment": "2-5个月租金报价", "dataType": 3 },
+      { "original": "1个月租金", "dbField": "rent_1_month", "comment": "1个月租金报价", "dataType": 3 }
+    ]
+  },
+  "face_registration": {
+    "tableRemarks": "人脸识别登记日志，记录租客的人脸信息登记操作日志及 PMS 系统同步状态。",
+    "columns": [
+      { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "名称 Name", "dbField": "resident_name", "comment": "租户姓名", "dataType": 0 },
+      { "original": "操作类型 Log_Type", "dbField": "log_type", "comment": "操作类型", "dataType": 0 },
+      { "original": "绿云发送 GC_Send", "dbField": "pms_send_status", "comment": "PMS发送状态", "dataType": 0 },
+      { "original": "备注 MEMO", "dbField": "memo", "comment": "备注", "dataType": 1 },
+      { "original": "创建人 Create_user", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
+      { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 }
+    ]
+  },
+  "room_master_list": {
+    "tableRemarks": "房源总表，所有房源的主档信息列表，包含标准租金及详细房号描述。",
+    "columns": [
+      { "original": "楼号", "dbField": "building_no", "comment": "楼栋号", "dataType": 0 },
+      { "original": "楼层", "dbField": "floor", "comment": "楼层", "dataType": 2 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
+      { "original": "租金", "dbField": "std_rent", "comment": "标准租金", "dataType": 3 },
+      { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
+      { "original": "房号信息", "dbField": "room_info", "comment": "房号信息", "dataType": 1 }
+    ]
+  },
+  "allowance_balance_current": {
+    "tableRemarks": "公寓津贴当期结余表，统计租客在本账期的津贴总额、已使用额及剩余结余情况。",
+    "columns": [
+      { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
+      { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "津贴总额 Allowance", "dbField": "allowance_total", "comment": "津贴总额", "dataType": 3 },
+      { "original": "津贴使用额 Allowance Use", "dbField": "allowance_used", "comment": "津贴使用额", "dataType": 3 },
+      { "original": "津贴当期余额 Allowance Balance", "dbField": "allowance_balance", "comment": "津贴余额", "dataType": 3 },
+      { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
+      { "original": "津贴生效时间 Allowance Datetime", "dbField": "effective_time", "comment": "津贴生效时间", "dataType": 6 }
+    ]
+  },
+  "tenant_renewal_stats": {
+    "tableRemarks": "租客续租统计表，统计租客的续租次数、租期及相关房费信息。",
+    "columns": [
+      { "original": "类型", "dbField": "stat_type", "comment": "统计类型", "dataType": 0 },
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "姓名", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房价", "dbField": "room_rate", "comment": "房价", "dataType": 3 },
+      { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
+      { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
+      { "original": "续租次数", "dbField": "renewal_count", "comment": "续租次数", "dataType": 2 }
+    ]
+  },
+  "posting_detail_fee_code": {
+    "tableRemarks": "前台入账明细表 (按费用代码)，记录前台每一笔入账交易的详细信息，按费用科目代码分类。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
+      { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
+      { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
+      { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
+      { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
+      { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
+      { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 }
+    ]
+  },
+  "bill_allowance_deduction": {
+    "tableRemarks": "账单津贴抵扣明细表，记录每一笔账单使用津贴进行抵扣的详细金额及剩余余额。",
+    "columns": [
+      { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
+      { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
+      { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
+      { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
+      { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
+      { "original": "应收 AR", "dbField": "ar_amount", "comment": "应收金额", "dataType": 3 },
+      { "original": "津贴抵扣 Allowance", "dbField": "deducted_amount", "comment": "抵扣金额", "dataType": 3 },
+      { "original": "剩余金额 Balance", "dbField": "remaining_balance", "comment": "剩余金额", "dataType": 3 }
+    ]
+  },
+  "posting_detail_tax_sep": {
+    "tableRemarks": "前台入账明细表 (价税分离)，详细记录入账交易的消费额、税金、净额及付款金额，支持价税分离核算。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
+      { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
+      { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
+      { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
+      { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
+      { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
+      { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
+      { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
+      { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
+      { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
+      { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
+      { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
+    ]
+  },
+  "posting_summary_tax_sep": {
+    "tableRemarks": "前台入账汇总表 (价税分离)，按账号汇总的入账交易统计，包含税金与净额的分离统计。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
+      { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
+      { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
+      { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
+      { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
+      { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
+      { "original": "用户", "dbField": "operator", "comment": "操作员", "dataType": 0 },
+      { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
+      { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
+      { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
+      { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
+      { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
+    ]
+  },
+  "contract_creation_log": {
+    "tableRemarks": "合同创建表，记录租约合同的创建详情，包括租期、租金、佣金及操作人信息。",
+    "columns": [
+      { "original": "合同号", "dbField": "contract_no", "comment": "合同号", "dataType": 0 },
+      { "original": "客人姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "实际月租", "dbField": "actual_monthly_rent", "comment": "实际月租", "dataType": 3 },
+      { "original": "渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
+      { "original": "坪效", "dbField": "rent_per_sqm", "comment": "坪效", "dataType": 3 },
+      { "original": "入住日期", "dbField": "check_in_date", "comment": "入住日期", "dataType": 5 },
+      { "original": "退房日期", "dbField": "check_out_date", "comment": "退房日期", "dataType": 5 },
+      { "original": "入住天数", "dbField": "stay_days", "comment": "入住天数", "dataType": 2 },
+      { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
+      { "original": "创建用户", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
+      { "original": "公司佣金", "dbField": "company_commission", "comment": "公司佣金", "dataType": 3 },
+      { "original": "个人佣金", "dbField": "personal_commission", "comment": "个人佣金", "dataType": 3 }
+    ]
+  },
+  "resident_birthday_list": {
+    "tableRemarks": "在住租客生日表，记录当前在住租客的生日信息，用于客户关怀与服务。",
+    "columns": [
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "生日", "dbField": "birthday", "comment": "住户生日", "dataType": 5 },
+      { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
+      { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
+      { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
+    ]
+  },
+  "contract_unsigned_active": {
+    "tableRemarks": "在住未送签合同表，列出当前在住但合同尚未完成送签流程的租客清单。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "状态", "dataType": 0 },
+      { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
+      { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 }
+    ]
+  },
+  "departure_followup_log": {
+    "tableRemarks": "离店跟进记录表，记录已离店或预离店租客的跟进情况、押金处理及退房信息。",
+    "columns": [
+      { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "租户状态", "dbField": "tenant_status", "comment": "租户状态", "dataType": 0 },
+      { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 },
+      { "original": "跟进日期", "dbField": "follow_up_date", "comment": "跟进日期", "dataType": 5 },
+      { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
+      { "original": "押金", "dbField": "deposit", "comment": "押金", "dataType": 3 },
+      { "original": "租户代码", "dbField": "resident_code", "comment": "租户代码", "dataType": 0 },
+      { "original": "STA", "dbField": "sta_status", "comment": "在住状态", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "实际租金", "dbField": "actual_rent", "comment": "实际租金", "dataType": 3 },
+      { "original": "租赁开始时间", "dbField": "lease_start_date", "comment": "起租日", "dataType": 5 },
+      { "original": "租赁结束时间", "dbField": "lease_end_date", "comment": "终租日", "dataType": 5 },
+      { "original": "搬出时间", "dbField": "move_out_date", "comment": "搬出日", "dataType": 5 },
+      { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 }
+    ]
+  },
+  "resident_id_document_list": {
+    "tableRemarks": "在住租客证件信息表，记录在住租客的身份证件类型、号码及联系方式等敏感信息。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
+      { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "国籍", "dbField": "nationality", "comment": "国籍", "dataType": 0 },
+      { "original": "证件类型", "dbField": "id_type", "comment": "证件类型", "dataType": 0 },
+      { "original": "证件号", "dbField": "id_number", "comment": "证件号码", "dataType": 0 },
+      { "original": "家庭住址", "dbField": "home_address", "comment": "家庭住址", "dataType": 0 },
+      { "original": "手机号", "dbField": "mobile", "comment": "手机号", "dataType": 0 }
+    ]
+  },
+  "arrival_departure_weekly": {
+    "tableRemarks": "周抵离客报表，统计未来一周内预计抵店和离店的租客信息。",
+    "columns": [
+      { "original": "状态", "dbField": "status", "comment": "状态", "dataType": 0 },
+      { "original": "类别", "dbField": "category", "comment": "类别", "dataType": 0 },
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房数", "dbField": "room_count", "comment": "房数", "dataType": 2 },
+      { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "手机", "dbField": "mobile", "comment": "手机", "dataType": 0 },
+      { "original": "证件号", "dbField": "id_number", "comment": "证件号", "dataType": 0 },
+      { "original": "公司/旅行社/订房中心", "dbField": "company_agency", "comment": "来源机构", "dataType": 0 },
+      { "original": "到达日期", "dbField": "arrival_date", "comment": "到达日期", "dataType": 6 },
+      { "original": "离开日期", "dbField": "departure_date", "comment": "离开日期", "dataType": 6 },
+      { "original": "房价", "dbField": "room_rate", "comment": "房价", "dataType": 3 },
+      { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
+    ]
+  },
+  "daily_departure_report": {
+    "tableRemarks": "每日离店报表，记录指定日期当天的离店租客详情及备注信息。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房数", "dbField": "room_count", "comment": "房数", "dataType": 2 },
+      { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "预定人", "dbField": "booker_name", "comment": "预订人", "dataType": 0 },
+      { "original": "公司/旅行社/订房中心", "dbField": "company_agency", "comment": "来源机构", "dataType": 0 },
+      { "original": "到达日期", "dbField": "arrival_date", "comment": "到达日期", "dataType": 6 },
+      { "original": "离开日期", "dbField": "departure_date", "comment": "离开日期", "dataType": 6 },
+      { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
+    ]
+  },
+  "account_aging_analysis": {
+    "tableRemarks": "账户账龄分析表，分析租客账户的欠款账龄，按 0-30天、30-60天等区间统计欠费金额。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "名称", "dbField": "item_name", "comment": "项目名称", "dataType": 0 },
+      { "original": "0-30天-其他场地租赁费", "dbField": "aging_0_30_rent", "comment": "0-30天场地租赁", "dataType": 3 },
+      { "original": "0-30天-微信-UPG", "dbField": "aging_0_30_wechat", "comment": "0-30天微信", "dataType": 3 },
+      { "original": "0-30天-支付宝-UPG", "dbField": "aging_0_30_alipay", "comment": "0-30天支付宝", "dataType": 3 },
+      { "original": "0-30天-银行转账", "dbField": "aging_0_30_bank", "comment": "0-30天银行转账", "dataType": 3 },
+      { "original": "0-30天-账龄小计", "dbField": "aging_0_30_subtotal", "comment": "0-30天小计", "dataType": 3 },
+      { "original": "30-60天-银行转账", "dbField": "aging_30_60_bank", "comment": "30-60天银行转账", "dataType": 3 },
+      { "original": "30-60天-账龄小计", "dbField": "aging_30_60_subtotal", "comment": "30-60天小计", "dataType": 3 },
+      { "original": "90天+-银行转账", "dbField": "aging_90_plus_bank", "comment": "90天+银行转账", "dataType": 3 },
+      { "original": "90天+-账龄小计", "dbField": "aging_90_plus_subtotal", "comment": "90天+小计", "dataType": 3 },
+      { "original": "账龄合计", "dbField": "aging_total", "comment": "账龄合计", "dataType": 3 }
+    ]
+  },
+  "tenant_profile_demographics": {
+    "tableRemarks": "租客画像统计表 (年龄/性别)，按年份统计租客的年龄段分布与性别比例，用于客户画像分析。",
+    "columns": [
+      { "original": "统计年份", "dbField": "stat_year", "comment": "统计年份", "dataType": 2 },
+      { "original": "年龄", "dbField": "age_group", "comment": "年龄段", "dataType": 0 },
+      { "original": "性别", "dbField": "gender", "comment": "性别", "dataType": 0 },
+      { "original": "数量", "dbField": "head_count", "comment": "人数", "dataType": 2 }
+    ]
+  },
+  "rent_revenue_recognition": {
+    "tableRemarks": "租金收入确认表，用于财务确认每月的租金收入，包含面价、净租金、物管费及税金的详细拆分。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
+      { "original": "户型", "dbField": "room_code", "comment": "户型代码", "dataType": 0 },
+      { "original": "面积", "dbField": "area_sqm", "comment": "面积", "dataType": 3 },
+      { "original": "渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
+      { "original": "市场码", "dbField": "market_code", "comment": "市场码", "dataType": 0 },
+      { "original": "租期", "dbField": "lease_term", "comment": "租期", "dataType": 2 },
+      { "original": "租赁单元", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "客户名称", "dbField": "resident_name", "comment": "住户名称", "dataType": 0 },
+      { "original": "销售顾问", "dbField": "sales_consultant", "comment": "销售顾问", "dataType": 0 },
+      { "original": "中介公司", "dbField": "agency_company", "comment": "中介公司", "dataType": 0 },
+      { "original": "合同开始时间", "dbField": "contract_start", "comment": "合同开始", "dataType": 5 },
+      { "original": "合同到期时间", "dbField": "contract_end", "comment": "合同到期", "dataType": 5 },
+      { "original": "当月开始", "dbField": "month_start", "comment": "当月计费开始", "dataType": 5 },
+      { "original": "当月到期", "dbField": "month_end", "comment": "当月计费结束", "dataType": 5 },
+      { "original": "月租金（面价）", "dbField": "monthly_rent_face", "comment": "月租金(面价)", "dataType": 3 },
+      { "original": "物管费", "dbField": "mgmt_fee", "comment": "物管费", "dataType": 3 },
+      { "original": "去税物管费", "dbField": "mgmt_fee_excl_tax", "comment": "去税物管费", "dataType": 3 },
+      { "original": "纯租金", "dbField": "net_rent", "comment": "纯租金", "dataType": 3 },
+      { "original": "去税纯租金", "dbField": "net_rent_excl_tax", "comment": "去税纯租金", "dataType": 3 },
+      { "original": "去税面价", "dbField": "face_rent_excl_tax", "comment": "去税面价", "dataType": 3 },
+      { "original": "当月入住天数", "dbField": "stay_days", "comment": "当月入住天数", "dataType": 2 },
+      { "original": "当月租金(面价)", "dbField": "curr_rent_face", "comment": "当月租金(面价)", "dataType": 3 },
+      { "original": "当月纯租金", "dbField": "curr_net_rent", "comment": "当月纯租金", "dataType": 3 },
+      { "original": "当月去税租金", "dbField": "curr_rent_excl_tax", "comment": "当月去税租金", "dataType": 3 },
+      { "original": "当月物管费", "dbField": "curr_mgmt_fee", "comment": "当月物管费", "dataType": 3 },
+      { "original": "当月去税物管费", "dbField": "curr_mgmt_fee_excl_tax", "comment": "当月去税物管费", "dataType": 3 },
+      { "original": "当月实际去税面价", "dbField": "curr_actual_face_excl_tax", "comment": "当月实际去税面价", "dataType": 3 }
+    ]
+  },
+  "energy_consumption_stats": {
+    "tableRemarks": "能耗统计表，统计水、电、气等各项能耗的用量及金额。",
+    "columns": [
+      { "original": "项目", "dbField": "item_name", "comment": "能耗项目", "dataType": 0 },
+      { "original": "数量", "dbField": "quantity", "comment": "数量", "dataType": 3 },
+      { "original": "单价", "dbField": "unit_price", "comment": "单价", "dataType": 3 },
+      { "original": "金额", "dbField": "total_amount", "comment": "金额", "dataType": 3 }
+    ]
+  },
+  "ar_aging_resident": {
+    "tableRemarks": "长租应收账龄表，针对长租客的各项费用（租金、水电、赔偿等）的应收账龄明细。",
+    "columns": [
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "销售员", "dbField": "salesperson", "comment": "销售员", "dataType": 0 },
+      { "original": "停车费", "dbField": "fee_parking", "comment": "停车费", "dataType": 3 },
+      { "original": "其他收入", "dbField": "fee_other", "comment": "其他收入", "dataType": 3 },
+      { "original": "冷水费", "dbField": "fee_water_cold", "comment": "冷水费", "dataType": 3 },
+      { "original": "卡拉OK使用费", "dbField": "fee_karaoke", "comment": "卡拉OK费", "dataType": 3 },
+      { "original": "宠物租金", "dbField": "fee_pet", "comment": "宠物租金", "dataType": 3 },
+      { "original": "房卡", "dbField": "fee_keycard", "comment": "房卡费", "dataType": 3 },
+      { "original": "房间清扫服务费", "dbField": "fee_cleaning", "comment": "清扫费", "dataType": 3 },
+      { "original": "损坏赔偿费", "dbField": "fee_damage", "comment": "赔偿费", "dataType": 3 },
+      { "original": "桶水费", "dbField": "fee_water_barrel", "comment": "桶水费", "dataType": 3 },
+      { "original": "洗衣服务费", "dbField": "fee_laundry", "comment": "洗衣费", "dataType": 3 },
+      { "original": "滞纳金-房租", "dbField": "fee_late_rent", "comment": "房租滞纳金", "dataType": 3 },
+      { "original": "热水费", "dbField": "fee_water_hot", "comment": "热水费", "dataType": 3 },
+      { "original": "物业费", "dbField": "fee_property_mgmt", "comment": "物业费", "dataType": 3 },
+      { "original": "物品租赁费", "dbField": "fee_item_rental", "comment": "物品租赁费", "dataType": 3 },
+      { "original": "电费", "dbField": "fee_electricity", "comment": "电费", "dataType": 3 },
+      { "original": "租金", "dbField": "fee_rent", "comment": "租金", "dataType": 3 },
+      { "original": "空调费", "dbField": "fee_ac", "comment": "空调费", "dataType": 3 },
+      { "original": "账龄小计", "dbField": "aging_subtotal", "comment": "小计", "dataType": 3 },
+      { "original": "账龄合计", "dbField": "aging_total", "comment": "合计", "dataType": 3 }
+    ]
+  },
+  "deposit_balance_realtime": {
+    "tableRemarks": "押金实时余额表，实时监控每个账户的应付押金、实付押金及结转情况。",
+    "columns": [
+      { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "预订人", "dbField": "booker_name", "comment": "预订人", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "协议公司", "dbField": "company", "comment": "协议公司", "dataType": 0 },
+      { "original": "应付押金", "dbField": "deposit_payable", "comment": "应付押金", "dataType": 3 },
+      { "original": "已付押金", "dbField": "deposit_paid", "comment": "已付押金", "dataType": 3 },
+      { "original": "结转金", "dbField": "deposit_transferred", "comment": "结转金", "dataType": 3 }
+    ]
+  },
+  "deposit_collection_detail": {
+    "tableRemarks": "押金收款明细表，记录每一笔押金收取的详细流水及单据信息。",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "入账日期", "dbField": "posting_date", "comment": "入账日期", "dataType": 6 },
+      { "original": "描述", "dbField": "description", "comment": "描述", "dataType": 0 },
+      { "original": "消费", "dbField": "consumption_amount", "comment": "消费金额", "dataType": 3 },
+      { "original": "税金", "dbField": "tax_amount", "comment": "税金", "dataType": 3 },
+      { "original": "净值", "dbField": "net_amount", "comment": "净额", "dataType": 3 },
+      { "original": "付款", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
+      { "original": "单号", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
+      { "original": "摘要", "dbField": "remark", "comment": "摘要", "dataType": 1 },
+      { "original": "订房中心渠道", "dbField": "channel", "comment": "渠道", "dataType": 0 },
+      { "original": "面积", "dbField": "area", "comment": "面积", "dataType": 3 },
+      { "original": "公司", "dbField": "company", "comment": "公司", "dataType": 0 }
+    ]
+  },
+  "tenant_analysis_report": {
+    "tableRemarks": "租客分析报表",
+    "columns": [
+      { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
+      { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "房类", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "生日", "dbField": "birthday", "comment": "生日", "dataType": 5 },
+      { "original": "性别", "dbField": "gender", "comment": "性别", "dataType": 0 },
+      { "original": "年龄", "dbField": "age", "comment": "年龄", "dataType": 2 },
+      { "original": "国籍", "dbField": "nationality", "comment": "国籍", "dataType": 0 },
+      { "original": "是否携带宠物", "dbField": "has_pet", "comment": "是否带宠物", "dataType": 0 },
+      { "original": "单人or家庭", "dbField": "occupancy_type", "comment": "入住类型", "dataType": 0 },
+      { "original": "到日", "dbField": "arrival_date", "comment": "到店日期", "dataType": 5 },
+      { "original": "离日", "dbField": "departure_date", "comment": "离店日期", "dataType": 5 },
+      { "original": "备注", "dbField": "remark", "comment": "备注", "dataType": 1 }
+    ]
+  },
+  "viewing_appointment_list": {
+    "tableRemarks": "预约带看表",
+    "columns": [
+      { "original": "来源", "dbField": "source", "comment": "来源", "dataType": 0 },
+      { "original": "资源编号", "dbField": "resource_id", "comment": "资源编号", "dataType": 0 },
+      { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "客人姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "手机", "dbField": "mobile", "comment": "手机", "dataType": 0 },
+      { "original": "邮箱", "dbField": "email", "comment": "邮箱", "dataType": 0 },
+      { "original": "客人数", "dbField": "resident_count", "comment": "客人数", "dataType": 2 },
+      { "original": "预约时间", "dbField": "appointment_time", "comment": "预约时间", "dataType": 5 },
+      { "original": "预约时段", "dbField": "appointment_slot", "comment": "预约时段", "dataType": 0 },
+      { "original": "租客意向", "dbField": "intention", "comment": "意向", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
+      { "original": "带看时间", "dbField": "visit_time", "comment": "带看时间", "dataType": 5 },
+      { "original": "带看时段", "dbField": "visit_slot", "comment": "带看时段", "dataType": 0 },
+      { "original": "跟进人", "dbField": "follower", "comment": "跟进人", "dataType": 0 },
+      { "original": "反馈备注", "dbField": "feedback", "comment": "反馈", "dataType": 1 },
+      { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "锁定ID", "dbField": "lock_id", "comment": "锁定ID", "dataType": 0 },
+      { "original": "锁定状态", "dbField": "lock_status", "comment": "锁定状态", "dataType": 0 },
+      { "original": "锁定时间", "dbField": "lock_time", "comment": "锁定时间", "dataType": 6 },
+      { "original": "锁定到期时间", "dbField": "lock_expire_time", "comment": "锁定到期", "dataType": 6 },
+      { "original": "锁定房价", "dbField": "lock_price", "comment": "锁定房价", "dataType": 3 },
+      { "original": "锁定押金", "dbField": "lock_deposit", "comment": "锁定押金", "dataType": 3 },
+      { "original": "押金状态", "dbField": "deposit_status", "comment": "押金状态", "dataType": 0 },
+      { "original": "转预定账号", "dbField": "transfer_account", "comment": "转预定账号", "dataType": 0 },
+      { "original": "转预定订单号", "dbField": "transfer_order", "comment": "转预定订单", "dataType": 0 },
+      { "original": "创建人", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
+      { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
+      { "original": "修改人", "dbField": "updated_by", "comment": "修改人", "dataType": 0 },
+      { "original": "修改时间", "dbField": "updated_at", "comment": "修改时间", "dataType": 6 }
+    ]
+  },
+  "resident_ledger_report": {
+    "tableRemarks": "台账报表(住客)",
+    "columns": [
+      { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
+      { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "付款方式 Pay Code", "dbField": "payment_method", "comment": "付款方式", "dataType": 0 },
+      { "original": "付款金额 Pay Amount", "dbField": "payment_amount", "comment": "付款金额", "dataType": 3 },
+      { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
+      { "original": "费用金额 Charge Amount", "dbField": "charge_amount", "comment": "费用金额", "dataType": 3 },
+      { "original": "单据号 No", "dbField": "bill_no", "comment": "单据号", "dataType": 0 },
+      { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
+      { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
+      { "original": "创建时间 Create Time", "dbField": "created_at", "comment": "创建时间", "dataType": 6 }
+    ]
+  },
+  "bill_detail_resident": {
+    "tableRemarks": "住客账单明细表，租客账户下的所有账单流水明细，包含生成时间、科目及金额。",
+    "columns": [
+      { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
+      { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "名称 Name", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
+      { "original": "入账时间 Gen Date", "dbField": "generation_date", "comment": "入账时间", "dataType": 6 },
+      { "original": "费用科目 Charge Code", "dbField": "charge_code", "comment": "费用科目", "dataType": 0 },
+      { "original": "备注 Meno", "dbField": "memo", "comment": "备注", "dataType": 1 },
+      { "original": "账期 Billing Cycle", "dbField": "billing_cycle", "comment": "账期", "dataType": 0 },
+      { "original": "应收 AR", "dbField": "ar_amount", "comment": "应收金额", "dataType": 3 },
+      { "original": "津贴抵扣 Allowance", "dbField": "allowance_deducted", "comment": "津贴抵扣", "dataType": 3 },
+      { "original": "剩余金额 Balance", "dbField": "balance", "comment": "剩余金额", "dataType": 3 },
+      { "original": "创建用户 Create User", "dbField": "created_by", "comment": "创建人", "dataType": 0 }
+    ]
+  },
+  "work_orders": {
+    "tableRemarks": "工单主表，记录所有维修、保洁等工单的详细信息，包含状态、服务内容及处理人员。",
+    "columns": [
+      { "original": "数据来源", "dbField": "data_source", "comment": "数据来源", "dataType": 0 },
+      { "original": "工单编号", "dbField": "work_order_no", "comment": "工单编号", "dataType": 0 },
+      { "original": "工单类型", "dbField": "order_type", "comment": "工单类型", "dataType": 0 },
+      { "original": "区域", "dbField": "area", "comment": "所属区域", "dataType": 0 },
+      { "original": "位置", "dbField": "location", "comment": "具体位置", "dataType": 0 },
+      { "original": "服务项目", "dbField": "service_item", "comment": "服务内容", "dataType": 0 },
+      { "original": "公寓", "dbField": "apartment", "comment": "公寓名称", "dataType": 0 },
+      { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
+      { "original": "申请人", "dbField": "applicant", "comment": "申请人", "dataType": 0 },
+      { "original": "联系方式", "dbField": "contact_info", "comment": "联系电话", "dataType": 0 },
+      { "original": "预计上门日期", "dbField": "expected_visit_date", "comment": "预计日期", "dataType": 5 },
+      { "original": "预计上门时间", "dbField": "expected_visit_time", "comment": "预计时间", "dataType": 0 },
+      { "original": "PMS单号", "dbField": "pms_order_no", "comment": "PMS关联单号", "dataType": 0 },
+      { "original": "状态", "dbField": "status", "comment": "工单状态", "dataType": 0 },
+      { "original": "创建人", "dbField": "created_by", "comment": "创建人", "dataType": 0 },
+      { "original": "创建时间", "dbField": "created_at", "comment": "创建时间", "dataType": 6 },
+      { "original": "更新人", "dbField": "updated_by", "comment": "更新人", "dataType": 0 },
+      { "original": "更新时间", "dbField": "updated_at", "comment": "更新时间", "dataType": 6 }
+    ]
+  },
+  "dim_room_type": {
+    "tableRemarks": "维度表：房型代码，定义标准房型代码、描述及其对应的面积和房间数量。",
+    "columns": [
+      { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
+      { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
+      { "original": "面积", "dbField": "area_sqm", "comment": "面积(平米)", "dataType": 3 },
+      { "original": "房间数量", "dbField": "room_count", "comment": "房间数量", "dataType": 2 }
+    ]
+  },
+  "dim_status_map": {
+    "tableRemarks": "维度表：房间/租客状态，定义系统中使用的各种状态代码及其对应的中文含义。",
+    "columns": [
+      { "original": "房间状态", "dbField": "status", "comment": "房间状态", "dataType": 0 },
+      { "original": "状态描述", "dbField": "status_desc", "comment": "状态描述", "dataType": 0 }
+    ]
+  },
+  "dim_work_order_items": {
+    "tableRemarks": "维度表：工单服务项目，定义工单可选的服务项目代码及标准描述。",
+    "columns": [
+      { "original": "服务项目代码", "dbField": "item_code", "comment": "服务项目代码", "dataType": 0 },
+      { "original": "服务项目描述", "dbField": "item_desc", "comment": "服务项目描述", "dataType": 0 }
+    ]
+  },
+  "dim_work_locations": {
+    "tableRemarks": "维度表：工单区域，定义工单发生的服务区域代码及描述。",
+    "columns": [
+      { "original": "作业区域代码", "dbField": "location_code", "comment": "作业区域代码", "dataType": 0 },
+      { "original": "作业区域描述", "dbField": "location_desc", "comment": "作业区域描述", "dataType": 0 }
+    ]
+  }
 }
