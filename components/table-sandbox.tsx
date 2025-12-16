@@ -271,15 +271,48 @@ export function TableSandbox() {
   }, [selectedTimestamp, handleColumnChange,handleTableRemarkChange, setNodes, setEdges, toast, normalizeHeader])
 
   // 5. 连线回调
+  // const onConnect: OnConnect = useCallback(
+  //   (params) => setEdges((eds) => addEdge({
+  //     ...params,
+  //     animated: true,
+  //     style: { stroke: '#2563eb', strokeWidth: 4 },
+  //     markerEnd: { type: MarkerType.ArrowClosed, color: '#2563eb' },
+  //     label: 'FK'
+  //   }, eds)),
+  //   [setEdges],
+  // );
   const onConnect: OnConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({
-      ...params,
-      animated: true,
-      style: { stroke: '#2563eb', strokeWidth: 4 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#2563eb' },
-      label: 'FK'
-    }, eds)),
-    [setEdges],
+    (params) => {
+      // 1. 查找源节点和目标节点
+      const sourceNode = nodes.find((n) => n.id === params.source);
+      const targetNode = nodes.find((n) => n.id === params.target);
+
+      // 2. 解码 Handle ID 获取原始列名
+      const sourceOriginal = decodeHandleId(params.sourceHandle);
+      const targetOriginal = decodeHandleId(params.targetHandle);
+
+      // 3. 查找对应的数据库字段名 (dbField)
+      const sourceCol = sourceNode?.data.columns.find((c) => c.original === sourceOriginal);
+      const targetCol = targetNode?.data.columns.find((c) => c.original === targetOriginal);
+
+      const sourceDbField = sourceCol?.dbField || sourceOriginal;
+      const targetDbField = targetCol?.dbField || targetOriginal;
+
+      // 4. 构建动态 Label
+      // 格式：sourceTable(field) -> targetTable(field)
+      const label = `${sourceNode?.data.tableName}(${sourceDbField}) -> ${targetNode?.data.tableName}(${targetDbField})`;
+
+      setEdges((eds) => addEdge({
+        ...params,
+        animated: true,
+        style: { stroke: '#2563eb', strokeWidth: 4 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#2563eb' },
+        label: label,
+        labelStyle: { fill: '#2563eb', fontWeight: 600, fontSize: 11 },
+        labelBgStyle: { fill: 'rgba(255, 255, 255, 0.95)', color: '#2563eb' },
+      }, eds));
+    },
+    [setEdges, nodes],
   );
 
   // 6. 校验逻辑
