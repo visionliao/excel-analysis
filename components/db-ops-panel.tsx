@@ -29,6 +29,7 @@ export interface TableData {
   tableName: string
   tableComment?: string
   originalName?: string
+  tableRemarks?: string
   exists: boolean
   rows: any[]
   totalInDB: number
@@ -347,6 +348,12 @@ export function DbOpsPanel({ postgresUrl, setPostgresUrl, state, setState }: DbO
                                     )}
                                     {!table.exists && <Badge variant="secondary">未在数据库中找到</Badge>}
                                 </div>
+                                {/* 显示详细备注 (tableRemarks) */}
+                                {table.tableRemarks && (
+                                    <div className="text-xs text-amber-600/90 mt-1 font-medium bg-amber-50 px-2 py-0.5 rounded inline-block border border-amber-100/50">
+                                        {table.tableRemarks}
+                                    </div>
+                                )}
                                 <div className="text-sm text-muted-foreground mt-1">
                                     {table.exists ? (
                                         <span>数据库总行数: <span className="font-bold text-foreground">{table.totalInDB}</span></span>
