@@ -1,6 +1,6 @@
 {
   "apg_asset_data": {
-    "tableRemarks": "APG 资产数据详情表，记录资产的基础信息、估值、能耗、碳排放及环保认证等 ESG 相关数据。",
+    "tableRemarks": "【资产档案与ESG】资产维度的静态基础表。包含资产全生命周期、物理地址、总建筑/租赁面积(GFA/GLA/NLA)、估值信息、能耗数据(水/电/碳排放)及LEED/WELL等环保认证信息。不包含具体房号的租赁状态。",
     "columns": [
       { "original": "序号", "dbField": "seq_no", "comment": "序列号", "dataType": 2 },
       { "original": "Vehicle/fund name", "dbField": "fund_name", "comment": "基金/载体名称", "dataType": 0 },
@@ -44,7 +44,7 @@
     ]
   },
   "ar_receivable_summary": {
-    "tableRemarks": "AR 财务应收汇总表，汇总统计每个租客的业务账单、财务账单及已收金额，用于应收账款对账。",
+    "tableRemarks": "【财务应收-汇总层】以租客为单位的应收账款(AR)总览表。核心数据包括：业务账单金额、财务入账金额、已收回金额及当前欠费余额。用于查询租客整体欠费情况，不包含具体每一笔消费明细。",
     "columns": [
       { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -60,7 +60,7 @@
     ]
   },
   "pp_prepayment_summary": {
-    "tableRemarks": "PP 财务预收汇总表，统计租客的预收账款信息，包含预收期间及预收金额详情。",
+    "tableRemarks": "【财务预收-汇总层】统计租客预付金(Prepayment)的余额表。包含预收的周期范围和具体金额。当查询租客账户里还有多少预存租金或余额时使用此表。",
     "columns": [
       { "original": "系统号", "dbField": "system_id", "comment": "系统编号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -74,7 +74,7 @@
     ]
   },
   "monthly_rr_summary": {
-    "tableRemarks": "月度 RR (Rent Roll) 汇总表，按月度统计各项 KPI 指标（如收入、出租率等）的当前、次月及远期预测数值。",
+    "tableRemarks": "【运营KPI-月度预测】Rent Roll (RR) 月度滚动报表。用于查看宏观运营指标（如出租率、总收入预测、RevPAR）在当前月、次月及未来的趋势预测数据。",
     "columns": [
       { "original": "ID", "dbField": "row_id", "comment": "行ID", "dataType": 2 },
       { "original": "Indicator", "dbField": "kpi_indicator", "comment": "指标名称", "dataType": 0 },
@@ -84,7 +84,7 @@
     ]
   },
   "performance_tracking": {
-    "tableRemarks": "绩效追踪报表，跟踪不同单元类型（Unit Type）的月度绩效表现及数值统计。",
+    "tableRemarks": "【运营KPI-房型绩效】按单元类型(Unit Type)维度的绩效追踪表。用于对比不同房型/业态（如一房、两房）的月度经营表现。",
     "columns": [
       { "original": "Unit", "dbField": "unit_code", "comment": "单元代码", "dataType": 0 },
       { "original": "Unit Type", "dbField": "unit_type", "comment": "单元类型", "dataType": 0 },
@@ -93,7 +93,7 @@
     ]
   },
   "statistics_general": {
-    "tableRemarks": "综合统计报表，按月份汇总各项通用统计指标的数值。",
+    "tableRemarks": "【宏观统计】月度综合统计数据的“大宽表”。包含无法归类的通用运营统计指标数据，按月份汇总。",
     "columns": [
       { "original": "统计月份", "dbField": "stat_month", "comment": "统计月份", "dataType": 0 },
       { "original": "ID", "dbField": "stat_id", "comment": "统计项ID", "dataType": 2 },
@@ -102,7 +102,7 @@
     ]
   },
   "vehicle_data_esg": {
-    "tableRemarks": "ESG 载体层级数据表，记录与 ESG 报告相关的载体（Vehicle）层级 KPI 指标及数值。",
+    "tableRemarks": "【ESG-基金层级】基金/载体(Vehicle)层级的环境与社会治理指标数据。比资产层级更高，通常用于投资人报告，不涉及具体房间。",
     "columns": [
       { "original": "序号", "dbField": "seq_no", "comment": "序号", "dataType": 0 },
       { "original": "ESG Vehicle - KPI requested or calculated", "dbField": "kpi_name", "comment": "ESG指标名称", "dataType": 0 },
@@ -110,7 +110,7 @@
     ]
   },
   "lease_expiration_schedule": {
-    "tableRemarks": "租约到期计划表，监控租客的租约状态、到期时间、市场租金及实际租金，用于续租管理。",
+    "tableRemarks": "【租赁管理-到期监控】租约到期与续租管理表。核心字段包括：合同到期日、搬出日、当前实际租金与市场租金对比、参考租金。用于查询未来即将到期的租客或租金差异分析。",
     "columns": [
       { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
       { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
@@ -129,7 +129,7 @@
     ]
   },
   "room_details": {
-    "tableRemarks": "房间详情基础表，记录所有房间的基础物理信息，包括楼栋、楼层、户型、面积及各租期报价。",
+    "tableRemarks": "【房源-物理详情与报价】房间维度的物理属性与定价表。包含楼层、朝向、详细户型结构以及不同租期（1/6/12个月）的标准挂牌租金报价。查询房间硬件设施或报价时用此表。",
     "columns": [
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
       { "original": "楼栋", "dbField": "building_no", "comment": "楼栋", "dataType": 0 },
@@ -146,7 +146,7 @@
     ]
   },
   "face_registration": {
-    "tableRemarks": "人脸识别登记日志，记录租客的人脸信息登记操作日志及 PMS 系统同步状态。",
+    "tableRemarks": "【安防-人脸识别】租客门禁权限与人脸录入日志。用于查询租客是否已办理入住人脸登记，以及PMS系统的同步状态。",
     "columns": [
       { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -159,7 +159,7 @@
     ]
   },
   "room_master_list": {
-    "tableRemarks": "房源总表，所有房源的主档信息列表，包含标准租金及详细房号描述。",
+    "tableRemarks": "【房源-主数据】最核心的房间列表主表。包含房间的基础ID、楼栋信息、标准租金(STD Rent)和面积。做跨表关联房间信息时的首选主表。",
     "columns": [
       { "original": "楼号", "dbField": "building_no", "comment": "楼栋号", "dataType": 0 },
       { "original": "楼层", "dbField": "floor", "comment": "楼层", "dataType": 2 },
@@ -172,7 +172,7 @@
     ]
   },
   "allowance_balance_current": {
-    "tableRemarks": "公寓津贴当期结余表，统计租客在本账期的津贴总额、已使用额及剩余结余情况。",
+    "tableRemarks": "【能源津贴-余额】租客能源或公用事业费津贴(Allowance)的实时账户表。包含津贴总额、已用额度和剩余额度。用于回答租客的电费津贴还剩多少此类问题。",
     "columns": [
       { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
       { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -185,7 +185,7 @@
     ]
   },
   "tenant_renewal_stats": {
-    "tableRemarks": "租客续租统计表，统计租客的续租次数、租期及相关房费信息。",
+    "tableRemarks": "【客户分析-续租行为】统计租客的忠诚度数据。包含续租次数、历史居住时长、累积房费贡献。用于分析客户粘性。",
     "columns": [
       { "original": "类型", "dbField": "stat_type", "comment": "统计类型", "dataType": 0 },
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
@@ -199,7 +199,7 @@
     ]
   },
   "posting_detail_fee_code": {
-    "tableRemarks": "前台入账明细表 (按费用代码)，记录前台每一笔入账交易的详细信息，按费用科目代码分类。",
+    "tableRemarks": "【财务流水-费用科目版】最详细的前台入账交易流水表。特点是按“费用科目代码”记录每一笔消费和付款。用于查询具体的消费记录（如某天的一笔早餐费）。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -214,7 +214,7 @@
     ]
   },
   "bill_allowance_deduction": {
-    "tableRemarks": "账单津贴抵扣明细表，记录每一笔账单使用津贴进行抵扣的详细金额及剩余余额。",
+    "tableRemarks": "【财务-津贴抵扣明细】记录账单金额如何被津贴(Allowance)抵扣的流水表。用于解释为什么账单金额是X元（因为津贴抵扣了Y元）。",
     "columns": [
       { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
       { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -229,7 +229,7 @@
     ]
   },
   "posting_detail_tax_sep": {
-    "tableRemarks": "前台入账明细表 (价税分离)，详细记录入账交易的消费额、税金、净额及付款金额，支持价税分离核算。",
+    "tableRemarks": "【财务流水-价税分离版】支持税务分析的交易流水表。将每一笔交易拆分为：消费额(Net)、税金(Tax)和总额。用于财务报税或需要查看不含税收入时使用。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -249,7 +249,7 @@
     ]
   },
   "posting_summary_tax_sep": {
-    "tableRemarks": "前台入账汇总表 (价税分离)，按账号汇总的入账交易统计，包含税金与净额的分离统计。",
+    "tableRemarks": "【财务流水-按日汇总】按账号和日期汇总的价税分离交易表。比明细表粒度粗，用于快速统计某租客某日的总消费税金情况。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -269,7 +269,7 @@
     ]
   },
   "contract_creation_log": {
-    "tableRemarks": "合同创建表，记录租约合同的创建详情，包括租期、租金、佣金及操作人信息。",
+    "tableRemarks": "【销售-合同签约】记录新签合同的业务细节。包含合同号、成交租金、渠道来源、以及销售员的佣金(Commission)记录。用于计算销售业绩。",
     "columns": [
       { "original": "合同号", "dbField": "contract_no", "comment": "合同号", "dataType": 0 },
       { "original": "客人姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
@@ -288,7 +288,7 @@
     ]
   },
   "resident_birthday_list": {
-    "tableRemarks": "在住租客生日表，记录当前在住租客的生日信息，用于客户关怀与服务。",
+    "tableRemarks": "【客户服务-生日】当前在住租客的生日清单。包含具体出生日期，用于客户关怀、赠送礼物查询。",
     "columns": [
       { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -300,7 +300,7 @@
     ]
   },
   "contract_unsigned_active": {
-    "tableRemarks": "在住未送签合同表，列出当前在住但合同尚未完成送签流程的租客清单。",
+    "tableRemarks": "【风控-未签合同】异常状态监控表。列出“人已入住但合同流程尚未签署完成”的租客清单，属于合规风险排查。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
@@ -311,7 +311,7 @@
     ]
   },
   "departure_followup_log": {
-    "tableRemarks": "离店跟进记录表，记录已离店或预离店租客的跟进情况、押金处理及退房信息。",
+    "tableRemarks": "【离店管理-退房跟进】记录租客离店后的后续处理。包含押金退还进度、房间检查备注、退房后追踪记录。",
     "columns": [
       { "original": "房间号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
       { "original": "房型", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
@@ -331,7 +331,7 @@
     ]
   },
   "resident_id_document_list": {
-    "tableRemarks": "在住租客证件信息表，记录在住租客的身份证件类型、号码及联系方式等敏感信息。",
+    "tableRemarks": "【客户档案-证件敏感信息】包含租客身份证、护照号、手机号、家庭住址等PII敏感信息。查询具体联系方式或身份验证时使用。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
@@ -346,7 +346,7 @@
     ]
   },
   "arrival_departure_weekly": {
-    "tableRemarks": "周抵离客报表，统计未来一周内预计抵店和离店的租客信息。",
+    "tableRemarks": "【前台-周预抵离】未来7天的预抵(Arrival)和预离(Departure)名单预测表。前台排房和接待准备的核心依据。",
     "columns": [
       { "original": "状态", "dbField": "status", "comment": "状态", "dataType": 0 },
       { "original": "类别", "dbField": "category", "comment": "类别", "dataType": 0 },
@@ -365,7 +365,7 @@
     ]
   },
   "daily_departure_report": {
-    "tableRemarks": "每日离店报表，记录指定日期当天的离店租客详情及备注信息。",
+    "tableRemarks": "【前台-今日离店】指定日期（通常是当日）的实际离店租客详情表。用于核对当天的退房执行情况。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -380,7 +380,7 @@
     ]
   },
   "account_aging_analysis": {
-    "tableRemarks": "账户账龄分析表，分析租客账户的欠款账龄，按 0-30天、30-60天等区间统计欠费金额。",
+    "tableRemarks": "【财务-欠费账龄分析】按时间段（0-30天, 30-60天等）统计的租客欠款报表。用于催缴欠费，分析坏账风险。注意：这里包含微信/支付宝等不同支付渠道的欠费分类。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "名称", "dbField": "item_name", "comment": "项目名称", "dataType": 0 },
@@ -397,7 +397,7 @@
     ]
   },
   "tenant_profile_demographics": {
-    "tableRemarks": "租客画像统计表 (年龄/性别)，按年份统计租客的年龄段分布与性别比例，用于客户画像分析。",
+    "tableRemarks": "【客户画像-人口统计】按年份统计的租客群体特征。仅包含年龄段分布的宏观统计数据。用于分析租客年龄结构，不包含具体租客明细。",
     "columns": [
       { "original": "统计年份", "dbField": "stat_year", "comment": "统计年份", "dataType": 2 },
       { "original": "年龄", "dbField": "age_group", "comment": "年龄段", "dataType": 0 },
@@ -406,7 +406,7 @@
     ]
   },
   "rent_revenue_recognition": {
-    "tableRemarks": "租金收入确认表，用于财务确认每月的租金收入，包含面价、净租金、物管费及税金的详细拆分。",
+    "tableRemarks": "【财务-收入确认】权责发生制下的月度租金确认表。详细拆分了当月的面价、去税租金、物管费。是财务做账确认当月实际营收(Revenue)的依据。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
@@ -439,7 +439,7 @@
     ]
   },
   "energy_consumption_stats": {
-    "tableRemarks": "能耗统计表，统计水、电、气等各项能耗的用量及金额。",
+    "tableRemarks": "【能耗-公寓总用量统计】记录公寓整体的水、电、气等公用事业的总用量及总金额。这是项目级的汇总数据，用于核算整个公寓的能源成本单价与总价，不区分具体房间。",
     "columns": [
       { "original": "项目", "dbField": "item_name", "comment": "能耗项目", "dataType": 0 },
       { "original": "数量", "dbField": "quantity", "comment": "数量", "dataType": 3 },
@@ -448,7 +448,7 @@
     ]
   },
   "ar_aging_resident": {
-    "tableRemarks": "长租应收账龄表，针对长租客的各项费用（租金、水电、赔偿等）的应收账龄明细。",
+    "tableRemarks": "【财务-费用类型欠款】按费用科目（房租、水电、赔偿、服务费）分类的应收账龄表。用于查询某租客具体是欠了房租还是欠了水电费。",
     "columns": [
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
       { "original": "姓名", "dbField": "resident_name", "comment": "住户姓名", "dataType": 0 },
@@ -475,7 +475,7 @@
     ]
   },
   "deposit_balance_realtime": {
-    "tableRemarks": "押金实时余额表，实时监控每个账户的应付押金、实付押金及结转情况。",
+    "tableRemarks": "【财务-押金台账】押金(Deposit)专题表。监控每个租客的应收押金、实收押金以及结转情况。回答“押金交齐了吗”或“押金有多少”时使用。",
     "columns": [
       { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
@@ -489,7 +489,7 @@
     ]
   },
   "deposit_collection_detail": {
-    "tableRemarks": "押金收款明细表，记录每一笔押金收取的详细流水及单据信息。",
+    "tableRemarks": "【财务-押金收款流水】押金收取的每一笔入账记录。用于追溯押金是何时、分几次收上来的。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -508,7 +508,7 @@
     ]
   },
   "tenant_analysis_report": {
-    "tableRemarks": "租客分析报表",
+    "tableRemarks": "【客户档案-全维度详情】租客个人信息的全貌表。包含宠物情况、家庭结构、国籍、年龄等综合标签。用于深入了解租客背景。",
     "columns": [
       { "original": "账号", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "状态", "dbField": "status", "comment": "在住状态", "dataType": 0 },
@@ -527,7 +527,7 @@
     ]
   },
   "viewing_appointment_list": {
-    "tableRemarks": "预约带看表",
+    "tableRemarks": "【销售-带看记录】潜在客户（Leads）的预约看房与实际带看日志。包含客户意向、来源渠道、销售跟进反馈以及锁定房源的情况。",
     "columns": [
       { "original": "来源", "dbField": "source", "comment": "来源", "dataType": 0 },
       { "original": "资源编号", "dbField": "resource_id", "comment": "资源编号", "dataType": 0 },
@@ -561,7 +561,7 @@
     ]
   },
   "resident_ledger_report": {
-    "tableRemarks": "台账报表(住客)",
+    "tableRemarks": "【财务-客账总流水】也就是客信(Folio)。记录租客在住期间所有的借(Charge)贷(Pay)流水，反映账户资金往来的全貌。",
     "columns": [
       { "original": "账号 Accnt NO.", "dbField": "account_no", "comment": "账号", "dataType": 0 },
       { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -577,7 +577,7 @@
     ]
   },
   "bill_detail_resident": {
-    "tableRemarks": "住客账单明细表，租客账户下的所有账单流水明细，包含生成时间、科目及金额。",
+    "tableRemarks": "【财务-账单详情】系统生成的正式账单(Bill)明细。与流水不同，这里记录的是出账记录。包含账单号、账单周期、应收金额及津贴抵扣后的最终余额。",
     "columns": [
       { "original": "订单号 NO.", "dbField": "order_no", "comment": "订单号", "dataType": 0 },
       { "original": "房号 Rmno", "dbField": "room_number", "comment": "房间号", "dataType": 0 },
@@ -593,7 +593,7 @@
     ]
   },
   "work_orders": {
-    "tableRemarks": "工单主表，记录所有维修、保洁等工单的详细信息，包含状态、服务内容及处理人员。",
+    "tableRemarks": "【工程-工单管理】所有维修、保洁、客服需求的工单主表。包含工单状态、申请人、处理位置和时间。查询“哪里坏了”或“服务进度”时使用。",
     "columns": [
       { "original": "数据来源", "dbField": "data_source", "comment": "数据来源", "dataType": 0 },
       { "original": "工单编号", "dbField": "work_order_no", "comment": "工单编号", "dataType": 0 },
@@ -616,7 +616,7 @@
     ]
   },
   "dim_room_type": {
-    "tableRemarks": "维度表：房型代码，定义标准房型代码、描述及其对应的面积和房间数量。",
+    "tableRemarks": "【字典表-房型】(Lookup Table) 用于将 room_code (如 1BD, STE) 转换为人类可读的房型名称。查询时请关联此表以获取房型描述。",
     "columns": [
       { "original": "房型代码", "dbField": "room_code", "comment": "房型代码", "dataType": 0 },
       { "original": "房型描述", "dbField": "room_code_desc", "comment": "房型描述", "dataType": 0 },
@@ -625,21 +625,21 @@
     ]
   },
   "dim_status_map": {
-    "tableRemarks": "维度表：房间/租客状态，定义系统中使用的各种状态代码及其对应的中文含义。",
+    "tableRemarks": "【字典表-状态】(Lookup Table) 用于将 status 代码 (如 I, O, V) 转换为具体的中文状态（在住、退房、空房）。查询时务必关联此表。",
     "columns": [
       { "original": "房间状态", "dbField": "status", "comment": "房间状态", "dataType": 0 },
       { "original": "状态描述", "dbField": "status_desc", "comment": "状态描述", "dataType": 0 }
     ]
   },
   "dim_work_order_items": {
-    "tableRemarks": "维度表：工单服务项目，定义工单可选的服务项目代码及标准描述。",
+    "tableRemarks": "【字典表-服务项目】(Lookup Table) 用于将工单中的 service_item 代码转换为具体的服务名称（如更换布草、冰箱维修）。包含服务分类信息。",
     "columns": [
       { "original": "服务项目代码", "dbField": "item_code", "comment": "服务项目代码", "dataType": 0 },
       { "original": "服务项目描述", "dbField": "item_desc", "comment": "服务项目描述", "dataType": 0 }
     ]
   },
   "dim_work_locations": {
-    "tableRemarks": "维度表：工单区域，定义工单发生的服务区域代码及描述。",
+    "tableRemarks": "【字典表-区域位置】(Lookup Table) 用于将工单中的 location 代码转换为具体的区域名称（如主卧、厨房、公区走道）。",
     "columns": [
       { "original": "作业区域代码", "dbField": "location_code", "comment": "作业区域代码", "dataType": 0 },
       { "original": "作业区域描述", "dbField": "location_desc", "comment": "作业区域描述", "dataType": 0 }

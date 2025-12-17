@@ -287,9 +287,10 @@ export async function executeDatabaseSync(
             }
           }
           if (rowsToInsert.length === 0 && rowsToUpdate.length === 0) {
+            // 不要返回，让流程继续，可以动态修改表备注、字段备注
             // console.log(`[Export] ${tableName}: No changes.`);
-            reportList.push(currentTableStats);
-            continue;
+            // reportList.push(currentTableStats);
+            // continue;
           }
           console.log(`[Export] ${tableName}: Insert ${rowsToInsert.length}, Update ${rowsToUpdate.length}`);
         }
@@ -300,20 +301,6 @@ export async function executeDatabaseSync(
         const colDefs = columns.map((c: any) => `"${c.name}" ${c.type}`).join(',\n');
         await client.query(`CREATE TABLE "${tableName}" (id SERIAL PRIMARY KEY, ${colDefs})`);
 
-        // 表备注写入
-        const finalTableComment = table.tableRemarks || table.originalName;
-        if (finalTableComment) {
-          const safeComment = finalTableComment.replace(/'/g, "''");
-          await client.query(`COMMENT ON TABLE "${tableName}" IS '${safeComment}'`);
-        }
-
-        // 列字段备注写入
-        for (const col of columns) {
-          if (col.comment) {
-            const safeComment = col.comment.replace(/'/g, "''");
-            await client.query(`COMMENT ON COLUMN "${tableName}"."${col.name}" IS '${safeComment}'`);
-          }
-        }
         // 公共表增加唯一约束
         if (SPECIAL_UNIQUE_KEYS[tableName]) {
           const targetCols = SPECIAL_UNIQUE_KEYS[tableName];
@@ -335,8 +322,25 @@ export async function executeDatabaseSync(
             }
           }
         }
-
         rowsToInsert = rows; 
+      }
+
+      // 表备注写入(每次导出数据都重写，确保备的注实时性)
+      const finalTableComment = table.tableRemarks || table.originalName;
+      console.log(`=================原始备注: ${finalTableComment}`);
+      if (finalTableComment) {
+        const safeComment = finalTableComment.replace(/'/g, "''");
+        console.log(`Table name: ${tableName}, 备注: ${safeComment}`);
+        await client.query(`COMMENT ON TABLE "${tableName}" IS '${safeComment}'`);
+      }
+
+      // 列字段备注写入(每次导出数据都重写，确保备的注实时性)
+      for (const col of columns) {
+        if (col.comment) {
+          const safeComment = col.comment.replace(/'/g, "''");
+          console.log(`Table name: ${tableName}, 字段名：${col.name}, 备注: ${safeComment}`);
+          await client.query(`COMMENT ON COLUMN "${tableName}"."${col.name}" IS '${safeComment}'`);
+        }
       }
 
       // 3. 插入
