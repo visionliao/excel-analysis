@@ -1,7 +1,7 @@
 // lib/db/db-diff.ts
 import { Client, types } from 'pg';
 import Cursor from 'pg-cursor';
-import { DataMasker } from './db-exporter';
+import { DataMasker } from './data-masker';
 
 // =============================================================================
 // 配置 pg 驱动：读取日期/时间时，直接返回字符串，不要转 JS Date 对象
