@@ -1,6 +1,7 @@
 // lib/db/db-diff.ts
 import { Client, types } from 'pg';
 import Cursor from 'pg-cursor';
+import { DataMasker } from './db-exporter';
 
 // =============================================================================
 // 配置 pg 驱动：读取日期/时间时，直接返回字符串，不要转 JS Date 对象
@@ -113,13 +114,27 @@ function normalizeValue(val: any, type: string): string {
 
 /**
  * 生成行签名及调试信息
+ * @param row 数据行（可能是数据库行或Excel行）
+ * @param columns 列定义
+ * @param isExcelData 是否为Excel数据（如果是，需要先脱敏再对比）
+ * @param tableName 表名（用于脱敏判断）
  */
-function generateSignatureParts(row: any, columns: any[]): { signature: string, parts: string[] } {
+function generateSignatureParts(
+  row: any,
+  columns: any[],
+  isExcelData: boolean = false,
+  tableName: string = ''
+): { signature: string, parts: string[] } {
   const SEPARATOR = ' | '; // 使用竖线分隔，视觉更清晰
   const parts = columns.map(col => {
     // 兼容 DB (key=name) 和 Excel (key=originalName)
     let rawVal = row[col.name];
     if (rawVal === undefined) rawVal = row[col.originalName];
+
+    // 🔒 如果是Excel数据，先进行脱敏处理（与数据库中的脱敏数据保持一致）
+    if (isExcelData && tableName) {
+      rawVal = DataMasker.maskValue(rawVal, tableName, col.name);
+    }
 
     return normalizeValue(rawVal, col.type);
   });
@@ -187,10 +202,10 @@ export async function calculateIncrementalDiff(
 
           // 采样调试第一行
           if (dbRowIndex === 0) {
-            const { parts: p1, signature: s1 } = generateSignatureParts(row, targetColumns);
+            const { parts: p1, signature: s1 } = generateSignatureParts(row, targetColumns, false, tableName);
             dbDebugSamples.push({ raw: row, normalized: p1, sig: s1 });
             if (excelRow) {
-              const { parts: p2, signature: s2 } = generateSignatureParts(excelRow, targetColumns);
+              const { parts: p2, signature: s2 } = generateSignatureParts(excelRow, targetColumns, true, tableName);
               incomingDebugSamples.push({ raw: excelRow, normalized: p2, sig: s2 });
             }
           }
@@ -201,9 +216,9 @@ export async function calculateIncrementalDiff(
             continue;
           }
 
-          // 对比指纹
-          const { signature: dbSig } = generateSignatureParts(row, targetColumns);
-          const { signature: excelSig } = generateSignatureParts(excelRow, targetColumns);
+          // 对比指纹（Excel数据先脱敏再生成签名）
+          const { signature: dbSig } = generateSignatureParts(row, targetColumns, false, tableName);
+          const { signature: excelSig } = generateSignatureParts(excelRow, targetColumns, true, tableName);
 
           if (dbSig !== excelSig) {
             // 不一致 -> 记录 Update，使用 DB 的 ID

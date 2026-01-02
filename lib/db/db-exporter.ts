@@ -114,7 +114,7 @@ class DataSanitizer {
 }
 
 // 2. 敏感数据脱敏中心
-class DataMasker {
+export class DataMasker {
   /**
    * 需要脱敏的表和字段配置
    * key: 表名, value: 字段配置对象
